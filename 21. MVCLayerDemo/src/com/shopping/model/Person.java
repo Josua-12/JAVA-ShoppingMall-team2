@@ -7,41 +7,33 @@ package com.shopping.model;
 public abstract class Person {
 
 	protected String id;		// 아이디
+	protected String password;	// 비밀번호
+	protected String email;		// 이메일
 	protected String name;	    // 이름
-	protected String phone;     // 전화번호
 	
 	
-	public Person(String id, String name, String phone) {
+	
+	public Person(String id, String password, String email, String name) {
 		//super();
 		this.id = id;
+		this.password = password;
+		this.email = email;
 		this.name = name;
-		this.phone = phone;
-	}
-
-
-	public String getId() {
-		return id;
-	}
-
-
-	public String getName() {
-		return name;
-	}
-
-
-	public String getPhone() {
-		return phone;
 	}
 	
+	public String getId() { return id; }
+	public String getPassword() { return password; }
+	public String getEmail() { return email; }
+	public String getName() { return name; }
+	
 	/*
-	 * 역할 ("회원", "사서")
+	 * 역할 ("회원", "관리자")
 	 */
 	public abstract String getRole();
 
-
 	@Override
 	public String toString() {
-		return String.format("ID : %s, 이름 : %s, 전화번호 : %s, 역할 : %s", id, name, phone, getRole());
+		return String.format("%s ID : %s, 비밀번호 : %s, 이메일 : %s, 이름 : %s", getRole(), id, password, email, name);
 	}
 }
 
