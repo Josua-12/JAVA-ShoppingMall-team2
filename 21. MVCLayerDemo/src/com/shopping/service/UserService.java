@@ -42,7 +42,7 @@ public class UserService {
 		}
 				
 		//User 객체 생성
-		User user = new User(id, password, name.trim());
+		User user = new User(id, password, email, name.trim());
 		
 		//Repository 기능 호출
 		User saveduser = userRepository.save(user);

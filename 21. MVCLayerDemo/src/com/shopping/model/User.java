@@ -13,9 +13,6 @@ public class User extends Person implements Serializable {
 	private static final long serialVersionID = 1L;
 	
 	//필드
-	private String id;	//사용자 ID 
-	private String password;
-	private String name;
 	private double balance;
 	
 public User(String id, String password, String email, String name) {
@@ -33,6 +30,10 @@ public User(String id, String password, String email, String name) {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getEmail() {
+		return email;
 	}
 
 	public double getBalance() {

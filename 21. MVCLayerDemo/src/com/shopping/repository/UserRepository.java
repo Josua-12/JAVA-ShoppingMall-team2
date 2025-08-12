@@ -35,7 +35,7 @@ public class UserRepository {
 	}
 
 	//ID로 사용자 조회
-	private User findById(String id) {
+	public User findById(String id) {
 		List<User> users = FileManager.readFromFile(FILE_NAME);
 				
 		return users.stream()
@@ -43,6 +43,30 @@ public class UserRepository {
 				.findFirst()
 				.orElse(null);
 	}
+
+	// 이메일로 사용자 조회
+	public User findByEmail(String email) {
+    List<User> users = FileManager.readFromFile(FILE_NAME);
+    return users.stream()
+            .filter(u -> u.getEmail().equalsIgnoreCase(email))
+            .findFirst()
+            .orElse(null);
+	}
+
+	// 전체 사용자 조회
+	public List<User> findAll() {
+    return FileManager.readFromFile(FILE_NAME);
+	}
+
+	// ID로 사용자 삭제
+	public boolean deleteById(String id) {
+        List<User> users = FileManager.readFromFile(FILE_NAME);
+        boolean removed = users.removeIf(u -> u.getId().equals(id));
+        if (removed) {
+            FileManager.writeToFile(FILE_NAME, users);
+        }
+        return removed;
+    }
 }
 
 
