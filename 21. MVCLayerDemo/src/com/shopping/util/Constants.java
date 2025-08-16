@@ -5,6 +5,9 @@ package com.shopping.util;
  */
 public class Constants {
 
-	//파일 이름 정의 
+	// 사용자 데이터 파일 
 	public static final String USER_DATA_FILE = "users.dat";
+
+	// 관리자 데이터 파일
+	public static final String ADMIN_DATA_FILE = "admins.dat";
 }

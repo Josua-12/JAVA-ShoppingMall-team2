@@ -10,12 +10,18 @@ import java.io.Serializable;
 public class User extends Person implements Serializable {
 	
 	//직렬화 버전 UID (파일 저장/읽기 시 클래스 버전 관리)
-	private static final long serialVersionID = 1L;
+	private static final long serialVersionUID = 1L;
 	
 	//필드
 	private double balance;
+
+	// 기본 생성자
+	public User() {
+		super("","","",""); 
+		this.balance=0.0;
+	}
 	
-public User(String id, String password, String email, String name) {
+	public User(String id, String password, String email, String name) {
 		super(id, password, email, name);	// 부모(person)생성자 호출
 		this.balance = 10000.0;	// 초기 잔액
 	}
@@ -99,23 +105,4 @@ public User(String id, String password, String email, String name) {
 	public String getRole() {
 		return "회원";
 	}
-	
-	
-	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
