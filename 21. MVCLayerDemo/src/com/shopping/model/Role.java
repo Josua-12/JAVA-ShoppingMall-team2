@@ -1,5 +1,6 @@
 package com.shopping.model;
 
-public interface Role {
-    String getRoleName(); // "USER" or "ADMIN"
+public enum Role {
+    USER,   // 일반 사용자
+    ADMIN   // 관리자
 }
