@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.shopping.model.User;
-import com.shopping.model.RoleEntity;
+
 import com.shopping.persistence.FileManager;
 import com.shopping.util.Constants;
 
