@@ -3,9 +3,9 @@ package com.shopping.model;
 import java.io.Serializable;
 
 /**
- * 일반 사용자를 나타내는 클래스
- * Role.USER를 가지며, 일반 구매자의 권한만 허용
- * 상품 조회, 장바구니, 주문 중심의 행위만 가능
+ * 사용자를 나타내는 클래스
+ * Role enum으로 일반 사용자와 관리자를 구분
+ * 상품 조회, 장바구니, 주문 및 관리 기능 제공
  */
 public class User extends Person implements Serializable {
     
@@ -30,43 +30,51 @@ public class User extends Person implements Serializable {
         this.role = Role.USER; // USER 역할 설정
     }
     
-    // 역할 관련 메서드
+    // 역할 관련 메서드들
     public String getRoleName() {
-        return "USER";
+        return role.name(); // "USER" 또는 "ADMIN" 반환
     }
     
-    public Role getRoleEnum() {
+    public Role getUserRole() {  // AuthService에서 사용하는 메서드명
         return role;
+    }
+    
+    public void setRole(Role role) {  // Role 변경 메서드 추가
+        this.role = role;
+        // 관리자는 잔액 사용하지 않으므로 0으로 설정
+        if (role == Role.ADMIN) {
+            this.balance = 0.0;
+        }
     }
     
     @Override
     public String getRole() {
-        return "회원"; // Person 클래스의 추상 메서드 오버라이드
+        return role == Role.ADMIN ? "관리자" : "회원"; // Person 클래스의 추상 메서드 오버라이드
     }
     
-    // 권한 메서드들 - 일반 사용자 권한 설정
+    // 권한 메서드들 - Role에 따라 동적으로 변경
     public boolean canBrowseProducts() {
-        return true; // 상품 조회 허용
+        return true; // 모든 역할이 상품 조회 가능
     }
     
     public boolean canAddToCart() {
-        return true; // 장바구니 추가 허용
+        return role == Role.USER; // 일반 사용자만 장바구니 사용
     }
     
     public boolean canPlaceOrder() {
-        return true; // 주문 허용
+        return role == Role.USER; // 일반 사용자만 주문 가능
     }
     
     public boolean canManageProducts() {
-        return false; // 상품 관리 불허
+        return role == Role.ADMIN; // 관리자만 상품 관리 가능
     }
     
     public boolean canViewAllOrders() {
-        return false; // 전체 주문 조회 불허
+        return role == Role.ADMIN; // 관리자만 전체 주문 조회 가능
     }
     
     public boolean canManageUsers() {
-        return false; // 사용자 관리 불허
+        return role == Role.ADMIN; // 관리자만 사용자 관리 가능
     }
     
     // 기존 getter 메서드들
@@ -105,12 +113,15 @@ public class User extends Person implements Serializable {
         }
     }
     
-    // 사용자 전용 편의 메서드들
+    // 사용자 전용 편의 메서드들 (일반 사용자만 사용)
     public boolean hasEnoughBalance(double amount) {
-        return this.balance >= amount;
+        return role == Role.USER && this.balance >= amount;
     }
     
     public void deductBalance(double amount) {
+        if (role != Role.USER) {
+            throw new IllegalStateException("관리자는 잔액을 사용할 수 없습니다.");
+        }
         if (hasEnoughBalance(amount)) {
             this.balance -= amount;
         } else {
@@ -119,7 +130,7 @@ public class User extends Person implements Serializable {
     }
     
     public void addBalance(double amount) {
-        if (amount > 0) {
+        if (role == Role.USER && amount > 0) {
             this.balance += amount;
         }
     }

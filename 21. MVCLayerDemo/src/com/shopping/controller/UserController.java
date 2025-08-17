@@ -3,9 +3,11 @@ package com.shopping.controller;
 import java.util.Scanner;
 
 import com.shopping.model.User;
+import com.shopping.model.Role;
 import com.shopping.service.UserService;
 import com.shopping.service.AuthService;
 import com.shopping.repository.UserRepository;
+
 
 /**
  * 사용자 관련 UI를 담당하는 컨트롤러 
@@ -128,9 +130,11 @@ public class UserController {
 		String password = scanner.nextLine();
 		
 		try {
-			User user = authService.login(email, password);
+			Role userRole = authService.login(email, password);
+			User currentUser = authService.getCurrentUser();
 			System.out.println("로그인 성공!");
-			System.out.println("환영합니다, " + user.getName() + "님!");
+			System.out.println("환영합니다, " + currentUser.getName() + "님!");
+			System.out.println("역할: " + (userRole == com.shopping.model.Role.ADMIN ? "관리자" : "회원"));
 		} catch (Exception e) {
 			System.out.println("로그인 실패: " + e.getMessage());
 		}
