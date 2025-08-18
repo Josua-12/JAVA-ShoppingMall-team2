@@ -1,51 +1,62 @@
 package com.shopping.model;
 
-import java.io.Serializable;
+// 1. 'extends User'를 추가하여 상속 관계를 명시합니다.
+public class Admin extends User {
 
-public class Admin extends User implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    private String id;
-    private String password;
-    private String email;
-    private String name;
-    private Role role; // Role.ADMIN
+    private static final long serialVersionUID = 2L; // serialVersionUID는 자식 클래스에서 고유하게 가질 수 있습니다.
 
     public Admin() {
-        this("", "", "", "");
+        // 2. super()를 통해 부모 클래스의 기본 생성자를 호출합니다.
+        super();
+        // Admin의 역할은 ADMIN으로 설정합니다.
+        this.role = Role.ADMIN;
     }
 
     public Admin(String id, String password, String email, String name) {
-        this.id = id;
-        this.password = password;
-        this.email = email;
-        this.name = name;
-        this.role = Role.ADMIN; // 기본 역할 ADMIN
+        // 3. super(...)를 통해 부모 클래스의 필드를 초기화하는 생성자를 호출합니다.
+        super(id, password, email, name);
+        // Admin의 역할은 ADMIN으로 설정합니다.
+        this.role = Role.ADMIN;
+        // 관리자는 잔액이 필요 없으므로 0으로 설정하거나, 부모의 로직을 그대로 둘 수 있습니다.
+        // 여기서는 부모 생성자에서 설정된 값을 그대로 사용합니다.
     }
 
-    // getter & setter
-    public String getId() { return id; }
-    public String getPassword() { return password; }
-    public String getEmail() { return email; }
-    public String getName() { return name; }
-    public Role getRole() { return role; }
+    // id, password, email, name 및 관련 getter/setter는
+    // User 클래스로부터 상속받았으므로 작성할 필요가 없습니다.
+    @Override
+    public boolean canBrowseProducts() { return true; } // 관리자는 모든 상품 조회 가능
+    
+    @Override
+    public boolean canAddToCart() { return false; } // 관리자는 장바구니 사용 안 함
 
-    public void setId(String id) { this.id = id; }
-    public void setPassword(String password) { this.password = password; }
-    public void setEmail(String email) { this.email = email; }
-    public void setName(String name) { this.name = name; }
-    public void setRole(Role role) { this.role = role; }
+    @Override
+    public boolean canPlaceOrder() { return false; } // 관리자는 주문 안 함
 
-    // 관리자 권한 메서드
-    public boolean canAddToCart() { return false; }
-    public boolean canPlaceOrder() { return false; }
-    public boolean canManageProducts() { return true; }
-    public boolean canViewAllOrders() { return true; }
-    public boolean canManageUsers() { return true; }
+    @Override
+    public boolean canManageProducts() { return true; } // 관리자는 상품 관리 가능
+
+    @Override
+    public boolean canViewAllOrders() { return true; } // 관리자는 모든 주문 조회 가능
+
+    @Override
+    public boolean canManageUsers() { return true; } // 관리자는 사용자 관리 가능
+    
+    // 관리자는 잔액 관련 기능이 필요 없으므로 재정의하여 막을 수 있습니다.
+    @Override
+    public boolean hasEnoughBalance(double amount) {
+        return false;
+    }
+
+    @Override
+    public void deductBalance(double amount) {
+        // 관리자는 잔액 차감 기능이 없음을 명확히 합니다.
+        throw new UnsupportedOperationException("관리자는 잔액 관련 기능을 사용할 수 없습니다.");
+    }
+
 
     @Override
     public String toString() {
+        // 관리자 정보에 맞게 toString() 재정의
         return String.format("Admin[id=%s, name=%s, role=%s]", id, name, role);
     }
 }
