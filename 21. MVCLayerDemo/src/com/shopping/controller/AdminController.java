@@ -106,7 +106,7 @@ String choice = scanner.nextLine();
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
 			case "1":
-				();		// 전체 회원 목록 조회
+				findAll();		// 전체 회원 목록 조회
 				break;
 			case "2":
 				();		// 회원 검색 (ID, 이름, 이메일)

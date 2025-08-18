@@ -16,7 +16,7 @@ public class AuthService {
 
     public AuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        initializeDefaultAdmin(); // 서버 시작 시 기본 관리자 계정 확인 및 생성
+        ensureDefaultAdmin(); // 서버 시작 시 기본 관리자 계정 확인 및 생성
     }
 
     /**
@@ -32,11 +32,7 @@ public class AuthService {
         return userRepository.save(user);
     }
     
-    @BeforeEach
-    void setup() {
-        userRepository.deleteAll();        // 기존 데이터 삭제
-        authService.initializeDefaultAdmin(); // 기본 관리자 계정 재생성
-    }
+    
 
     /**
      * 관리자 계정 등록
@@ -120,17 +116,17 @@ public class AuthService {
     /**
      * 초기 관리자 계정 생성
      */
-    public void initializeDefaultAdmin() {
-        try {
-            User existingAdmin = userRepository.findByEmail("admin@shopping.com");
-            if (existingAdmin == null) {
-                registerAdmin("admin", "admin123", "admin@shopping.com", "시스템 관리자");
-                System.out.println("기본 관리자 계정이 생성되었습니다.");
-            } else {
-                System.out.println("기본 관리자 계정이 이미 존재합니다.");
-            }
-        } catch (Exception e) {
-            System.err.println("기본 관리자 계정 생성 실패: " + e.getMessage());
+    private void ensureDefaultAdmin() {
+    // 이미 있으면 아무 것도 안 함 (idempotent)
+    User existing = userRepository.findByEmail("admin@shopping.com");
+    if (existing == null) {
+        // 중복 ID / 이메일 예외를 피하려고 validateRegistration 대신 직접 안전 체크
+        if (!userRepository.existsById("admin") && userRepository.findByEmail("admin@shopping.com") == null) {
+            String hashed = PasswordEncoder.hash("admin123");
+            Admin admin = new Admin("admin", hashed, "admin@shopping.com", "시스템 관리자");
+            userRepository.save(admin);
+            System.out.println("기본 관리자 계정이 생성되었습니다.");
         }
     }
+}
 }
