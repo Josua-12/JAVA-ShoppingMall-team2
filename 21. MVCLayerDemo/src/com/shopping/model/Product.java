@@ -21,14 +21,14 @@ public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // --- 필드 ---
-    private int id;          // 상품 고유 ID
+    private String id;          // 상품 고유 ID
     private String name;     // 상품 이름
     private double price;    // 상품 가격
     private int stock;       // 재고 수량
     private String category; // 상품 카테고리
 
     // --- 생성자 ---
-    public Product(int id, String name, double price, int stock, String category) {
+    public Product(String id, String name, double price, int stock, String category) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -36,12 +36,13 @@ public class Product implements Serializable {
         this.category = category;
     }
 
-    // --- Getter 및 Setter 메소드 ---
-    public int getId() {
+
+	// --- Getter 및 Setter 메소드 ---
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

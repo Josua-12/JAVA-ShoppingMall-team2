@@ -3,22 +3,26 @@ package com.shopping.controller;
 import java.util.Scanner;
 
 import com.shopping.model.Admin;
+import com.shopping.repository.FileOrderRepository;
+import com.shopping.repository.OrderRepository;
 import com.shopping.repository.UserRepository;
 import com.shopping.service.OrderService;
+import com.shopping.service.ProductService;
+import com.shopping.repository.ProductRepository;
 import com.shopping.service.UserService;
 
 public class AdminController {
 	
 	private UserService userService;
 	private OrderService orderService;
-//	private ProductService productService;
+	private ProductService productService;
 	private Scanner scanner;
 	
 	public AdminController() {
 		//super();
 		UserRepository userRepository = new UserRepository();
 		this.userService = new UserService();
-		this.orderService = new OrderService();
+//		this.orderService = new OrderService(new FileOrderRepository(), new ProductRepository());
 //		this.productService = new ProductService;
 		this.scanner = new Scanner(System.in);
 	}

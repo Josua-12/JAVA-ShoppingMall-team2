@@ -18,7 +18,7 @@ public class Cart {
 	
 	//카트에 이미 같은 상품이 있는지 확인 후 알맞은 로직 수행 메서드
 	public void addProduct(Product product, int quantity) {
-		int productId = product.getId();
+		String productId = product.getId();
 		
 		if (items.containsKey(productId)) {
 			CartItem currentItem = items.get(productId);

@@ -22,7 +22,7 @@ public class ProductService {
 
     // 상품 데이터를 저장하기 위한 메모리 내 저장소 (실제 환경에서는 데이터베이스 연동)
     // Key: 상품 ID, Value: Product 객체
-    private final Map<Integer, Product> products = new HashMap<>();
+    private final Map<String, Product> products = new HashMap<>();
 
     // 상품 ID를 생성하기 위한 AtomicInteger. 동시성 환경에서도 안전하게 고유 ID를 생성합니다.
     private final AtomicInteger nextId = new AtomicInteger(1);
@@ -57,7 +57,7 @@ public class ProductService {
      * return 찾아낸 Product 객체
      * throws IllegalArgumentException ID에 해당하는 상품을 찾을 수 없을 경우 발생
      */
-    public Product findProductById(int id) {
+    public Product findProductById(String id) {
         Product product = products.get(id);
         if (product == null) {
             throw new IllegalArgumentException("오류: ID " + id + "에 해당하는 상품을 찾을 수 없습니다.");
@@ -96,9 +96,9 @@ public class ProductService {
         // 설계 포인트 2: 검증 - 가격 > 0, 재고 >= 0, 이름 비어있지 않음
         validateProductData(name, price, stock);
         // 설계 포인트 2: 검증 - ID를 이용한 이름 중복 검사 (새 상품이므로 -1을 전달하여 모든 기존 상품과 비교)
-        validateDuplicateName(name, -1);
+        validateDuplicateName(name, null);
 
-        int id = nextId.getAndIncrement(); // 고유 ID 생성
+        String id = String.valueOf(nextId.getAndIncrement()); // 고유 ID 생성
         Product newProduct = new Product(id, name, price, stock, category);
         products.put(id, newProduct); // 상품 저장
         return newProduct;
@@ -113,7 +113,7 @@ public class ProductService {
      * param newPrice  새로운 상품 가격
      * throws IllegalArgumentException 상품을 찾을 수 없거나 유효성 검사 실패 시 발생
      */
-    public void updateProduct(int id, String newName, double newPrice) {
+    public void updateProduct(String id, String newName, double newPrice) {
         Product product = findProductById(id); // 상품 존재 여부 확인 (없으면 여기서 IllegalArgumentException 발생)
 
         // 설계 포인트 2: 검증 - 가격 > 0
@@ -139,7 +139,7 @@ public class ProductService {
      * param id 삭제할 상품의 고유 ID
      * throws IllegalArgumentException ID에 해당하는 상품을 찾을 수 없을 경우 발생
      */
-    public void deleteProduct(int id) {
+    public void deleteProduct(String id) {
         if (products.remove(id) == null) { // Map에서 ID를 키로 상품 삭제
             throw new IllegalArgumentException("오류: ID " + id + "에 해당하는 상품을 찾을 수 없습니다.");
         }
@@ -153,7 +153,7 @@ public class ProductService {
      * param amount 변경할 수량 (양수: 재고 증가, 음수: 재고 감소)
      * throws IllegalArgumentException 상품을 찾을 수 없거나 재고가 0 미만이 될 경우 발생
      */
-    public void changeStock(int id, int amount) {
+    public void changeStock(String id, int amount) {
         Product product = findProductById(id); // 상품 존재 여부 확인
 
         int newStock = product.getStock() + amount;
@@ -193,10 +193,10 @@ public class ProductService {
      * param currentProductId 현재 수정 중인 상품의 ID (새 상품 추가 시에는 -1 전달)
      * throws IllegalArgumentException 동일한 이름의 상품이 이미 존재할 경우 발생
      */
-    private void validateDuplicateName(String name, int currentProductId) {
+    private void validateDuplicateName(String name, String i) {
         for (Product p : products.values()) {
             // 다른 상품(ID가 다름)이면서 이름이 같은 경우 중복으로 간주
-            if (p.getId() != currentProductId && p.getName().equalsIgnoreCase(name)) {
+        	if ((i == null || !p.getId().equals(i)) && p.getName().equalsIgnoreCase(name)) {
                 throw new IllegalArgumentException("오류: '" + name + "' 이름의 상품이 이미 존재합니다.");
             }
         }
