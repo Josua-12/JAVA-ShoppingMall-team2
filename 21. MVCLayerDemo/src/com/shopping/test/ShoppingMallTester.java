@@ -10,7 +10,7 @@ import com.shopping.repository.UserRepository;
  * Shopping Mall 시스템 자동화 테스트 클래스
  * 각 기능을 체계적으로 테스트하고 결과를 출력
  */
-public class UserServiceTest {
+public class ShoppingMallTester {
     
     private UserRepository userRepository;
     private UserService userService;
@@ -21,14 +21,14 @@ public class UserServiceTest {
     private int passedTests = 0;
     private int failedTests = 0;
     
-    public UserServiceTest() {
+    public ShoppingMallTester() {
         this.userRepository = new UserRepository();
         this.userService = new UserService(userRepository);
         this.authService = new AuthService(userRepository);
     }
     
     public static void main(String[] args) {
-        UserServiceTest tester = new UserServiceTest();
+        ShoppingMallTester tester = new ShoppingMallTester();
         tester.runAllTests();
     }
     
@@ -117,12 +117,11 @@ public class UserServiceTest {
         
         // 2.1 정상 로그인 (일반 사용자)
         try {
-            User role = authService.login("testuser@test.com", "test1234");
+            Role role = authService.login("testuser@test.com", "test1234");
             User currentUser = authService.getCurrentUser();
-            Role userRole = authService.getCurrentRole();
             
             assertTest("정상 로그인", currentUser != null, "로그인 사용자: " + currentUser.getName());
-            assertTest("사용자 역할 확인", userRole == Role.USER, "역할: " + role);
+            assertTest("사용자 역할 확인", role == Role.USER, "역할: " + role);
             assertTest("현재 사용자 설정", currentUser.getEmail().equals("testuser@test.com"), "이메일 일치");
         } catch (Exception e) {
             assertTest("정상 로그인", false, "실패: " + e.getMessage());
@@ -286,24 +285,22 @@ public class UserServiceTest {
             assertTest("새 사용자 가입", newUser != null, "가입 성공");
             
             // Step 2: 로그인
-            User loggedInUser = authService.login("journey@test.com", "pass1234");
-            User currentUser = authService.getCurrentUser();
-            Role userRole = loggedInUser.getRole(); // User 객체에서 역할 가져오기
-
-            assertTest("신규 사용자 로그인", currentUser != null && userRole == Role.USER, "로그인 성공");
+            Role role = authService.login("journey@test.com", "pass1234");
+            User loggedIn = authService.getCurrentUser();
+            assertTest("신규 사용자 로그인", loggedIn != null && role == Role.USER, "로그인 성공");
             
             // Step 3: 사용자 권한 확인
-            assertTest("일반 사용자 장바구니 권한", currentUser.canAddToCart(), "장바구니 사용 가능");
-            assertTest("일반 사용자 주문 권한", currentUser.canPlaceOrder(), "주문 가능");
-            assertTest("일반 사용자 관리 권한", !currentUser.canManageProducts(), "상품 관리 불가");
+            assertTest("일반 사용자 장바구니 권한", loggedIn.canAddToCart(), "장바구니 사용 가능");
+            assertTest("일반 사용자 주문 권한", loggedIn.canPlaceOrder(), "주문 가능");
+            assertTest("일반 사용자 관리 권한", !loggedIn.canManageProducts(), "상품 관리 불가");
             
             // Step 4: 잔액 관리
-            double originalBalance = currentUser.getBalance();
-            assertTest("충분한 잔액 확인", currentUser.hasEnoughBalance(5000), "5000원 결제 가능");
+            double originalBalance = loggedIn.getBalance();
+            assertTest("충분한 잔액 확인", loggedIn.hasEnoughBalance(5000), "5000원 결제 가능");
             
-            currentUser.deductBalance(3000);
-            assertTest("잔액 차감", currentUser.getBalance() == originalBalance - 3000, 
-                "차감 후 잔액: " + currentUser.getBalance());
+            loggedIn.deductBalance(3000);
+            assertTest("잔액 차감", loggedIn.getBalance() == originalBalance - 3000, 
+                "차감 후 잔액: " + loggedIn.getBalance());
             
             // Step 5: 로그아웃
             authService.logout();

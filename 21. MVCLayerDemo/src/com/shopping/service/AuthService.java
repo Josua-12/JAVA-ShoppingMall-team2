@@ -31,6 +31,12 @@ public class AuthService {
 
         return userRepository.save(user);
     }
+    
+    @BeforeEach
+    void setup() {
+        userRepository.deleteAll();        // 기존 데이터 삭제
+        authService.initializeDefaultAdmin(); // 기본 관리자 계정 재생성
+    }
 
     /**
      * 관리자 계정 등록
@@ -114,14 +120,17 @@ public class AuthService {
     /**
      * 초기 관리자 계정 생성
      */
-    private void initializeDefaultAdmin() {
-        if (userRepository.findByEmail("admin@shopping.com") == null) {
-            try {
+    public void initializeDefaultAdmin() {
+        try {
+            User existingAdmin = userRepository.findByEmail("admin@shopping.com");
+            if (existingAdmin == null) {
                 registerAdmin("admin", "admin123", "admin@shopping.com", "시스템 관리자");
                 System.out.println("기본 관리자 계정이 생성되었습니다.");
-            } catch (Exception e) {
-                System.err.println("기본 관리자 계정 생성 실패: " + e.getMessage());
+            } else {
+                System.out.println("기본 관리자 계정이 이미 존재합니다.");
             }
+        } catch (Exception e) {
+            System.err.println("기본 관리자 계정 생성 실패: " + e.getMessage());
         }
     }
 }
