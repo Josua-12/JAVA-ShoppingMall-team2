@@ -10,4 +10,7 @@ public class Constants {
 
 	// 관리자 데이터 파일
 	public static final String ADMIN_DATA_FILE = "admins.dat";
+	
+	// 카트 데이터 파일
+	public static final String CART_DATA_FILE = "carts.dat";
 }

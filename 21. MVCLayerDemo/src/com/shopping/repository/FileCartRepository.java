@@ -2,6 +2,7 @@ package com.shopping.repository;
 
 import com.shopping.model.Cart;
 import com.shopping.persistence.FileManager;
+import com.shopping.util.Constants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import java.util.Optional;
 public class FileCartRepository {
 
     // 모든 사용자의 장바구니 정보를 담을 파일 이름
-    private static final String FILE_NAME = "carts.dat";
+    private static final String FILE_NAME = Constants.CART_DATA_FILE;
     private Map<String, Cart> database;
 
     
