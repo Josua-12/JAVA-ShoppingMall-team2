@@ -6,13 +6,14 @@ public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String id;
-    private String password;
-    private String email;
-    private String name;
-    private Role role; // Role.USER
+    // protected로 변경하면 자식 클래스에서 직접 접근 가능합니다.
+    protected String id;
+    protected String password;
+    protected String email;
+    protected String name;
+    protected Role role;
 
-    private double balance; // 사용자 잔액
+    private double balance; // 사용자 잔액은 일반 User에게만 의미가 있을 수 있습니다.
 
     public User() {
         this("", "", "", "");
@@ -23,11 +24,11 @@ public class User implements Serializable {
         this.password = password;
         this.email = email;
         this.name = name;
-        this.role = Role.USER; // 기본 역할 USER
+        this.role = Role.USER; // 기본 역할은 USER
         this.balance = 10000.0; // 초기 잔액
     }
 
-    // getter & setter
+    // getter & setter (생략)
     public String getId() { return id; }
     public String getPassword() { return password; }
     public String getEmail() { return email; }
@@ -42,13 +43,15 @@ public class User implements Serializable {
     public void setRole(Role role) { this.role = role; }
     public void setBalance(double balance) { this.balance = balance; }
 
-    // 권한 관련 메서드
+
+    // 권한 관련 메서드 (기본 사용자 기준)
     public boolean canAddToCart() { return true; }
     public boolean canPlaceOrder() { return true; }
     public boolean canManageProducts() { return false; }
     public boolean canViewAllOrders() { return false; }
     public boolean canManageUsers() { return false; }
 
+    // 잔액 관련 메서드
     public boolean hasEnoughBalance(double amount) { return balance >= amount; }
     public void deductBalance(double amount) {
         if (amount > balance) throw new IllegalStateException("잔액 부족");
