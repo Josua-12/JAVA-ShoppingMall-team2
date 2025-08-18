@@ -2,8 +2,7 @@ package com.shopping.test;
 
 import java.io.File;
 
-import javax.management.relation.Role;
-
+import com.shopping.model.Role;
 import com.shopping.model.User;
 import com.shopping.repository.UserRepository;
 import com.shopping.service.AuthService;
