@@ -89,9 +89,9 @@ public class UserRepository {
     public User findByEmail(String email) {
         List<User> users = FileManager.readFromFile(FILE_NAME);
         return users.stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .orElse(null);
+        	    .filter(u -> u.getEmail() != null && u.getEmail().equalsIgnoreCase(email))
+        	    .findFirst()
+        	    .orElse(null);
     }
 
     // 전체 사용자 조회

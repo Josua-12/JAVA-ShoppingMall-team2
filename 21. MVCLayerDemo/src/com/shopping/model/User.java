@@ -45,6 +45,7 @@ public class User implements Serializable {
 
 
     // 권한 관련 메서드 (기본 사용자 기준)
+    public boolean canBrowseProducts() { return false; }
     public boolean canAddToCart() { return true; }
     public boolean canPlaceOrder() { return true; }
     public boolean canManageProducts() { return false; }

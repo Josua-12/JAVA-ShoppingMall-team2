@@ -24,6 +24,9 @@ public class Admin extends User {
     // id, password, email, name 및 관련 getter/setter는
     // User 클래스로부터 상속받았으므로 작성할 필요가 없습니다.
     @Override
+    public boolean canBrowseProducts() { return true; } // 관리자는 모든 상품 조회 가능
+    
+    @Override
     public boolean canAddToCart() { return false; } // 관리자는 장바구니 사용 안 함
 
     @Override

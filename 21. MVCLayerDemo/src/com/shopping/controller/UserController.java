@@ -130,8 +130,9 @@ public class UserController {
 		String password = scanner.nextLine();
 		
 		try {
-			Role userRole = authService.login(email, password);
-			User currentUser = authService.getCurrentUser();
+			User currentUser = authService.login(email, password);  // User 반환
+			Role userRole = currentUser.getRole();                  // Role 추출
+			
 			System.out.println("로그인 성공!");
 			System.out.println("환영합니다, " + currentUser.getName() + "님!");
 			System.out.println("역할: " + (userRole == com.shopping.model.Role.ADMIN ? "관리자" : "회원"));
