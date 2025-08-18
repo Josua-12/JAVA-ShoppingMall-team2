@@ -2,6 +2,8 @@ package com.shopping.test;
 
 import java.io.File;
 
+import javax.management.relation.Role;
+
 import com.shopping.model.User;
 import com.shopping.repository.UserRepository;
 import com.shopping.service.AuthService;
@@ -38,7 +40,8 @@ public class AuthTest {
         //테스트3 : 로그인 테스트
         System.out.println("\n3. 로그인 테스트");
         try {
-            User loginUser = authService.login("testuser1@choongang.com", "pass1234");
+            Role role = authService.login("testuser1@choongang.com", "pass1234");
+            User loginUser = authService.getCurrentUser();
             System.out.println("성공 : " + loginUser.getName() + "님 로그인 성공");
         } catch(Exception e) {
             System.out.println("실패 : " + e.getMessage());

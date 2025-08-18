@@ -60,7 +60,7 @@ public class AuthService {
     /**
      * 로그인
      */
-    public javax.management.relation.Role login(String email, String password) {
+    public Role login(String email, String password) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new RuntimeException("해당 이메일의 계정을 찾을 수 없습니다.");
