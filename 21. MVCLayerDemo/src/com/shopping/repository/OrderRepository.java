@@ -19,7 +19,7 @@ public interface OrderRepository {
 		List<Order> findAll();
 		
 		// 조건 조회 (프로젝트에 필요한 것만 우선)
-		List<Order> findByCustomerId(String customerId);
+		List<Order> findByUserId(String customerId);
 		List<Order> findByStatus(OrderStatus status);
 		List<Order> findByDateRange(LocalDate from, LocalDate to);
 		

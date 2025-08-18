@@ -112,9 +112,9 @@ public abstract class FileOrderRepository implements OrderRepository {
      * 특정 고객 ID의 모든 주문 조회
      */
     @Override
-    public synchronized List<Order> findByCustomerId(String customerId) {
+    public synchronized List<Order> findByUserId(String userId) {
         return cache.values().stream()
-                .filter(o -> Objects.equals(o.getUserId(), customerId))
+                .filter(o -> Objects.equals(o.getUserId(), userId))
                 .collect(Collectors.toList());
     }
 

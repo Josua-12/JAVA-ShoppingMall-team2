@@ -173,8 +173,9 @@ String choice = scanner.nextLine();
 
 	private void displayAllUsers() {
 		System.out.println("\n== 전체 사용자 조회 ==");
-		userRepository.findAll().	
-	};
+		userRepository.findAll();
+		
+	}
 
 
 

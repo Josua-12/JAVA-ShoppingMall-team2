@@ -34,9 +34,15 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final ProductRepository productRepo;
 
+
+//    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
+//        this.orderRepo = Objects.requireNonNull(orderRepo);
+//        this.productRepo = Objects.requireNonNull(productRepo);
+//    }
+    
     public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
-        this.orderRepo = Objects.requireNonNull(orderRepo);
-        this.productRepo = Objects.requireNonNull(productRepo);
+        this.orderRepo = orderRepo;
+        this.productRepo = productRepo;
     }
 
     // =========================

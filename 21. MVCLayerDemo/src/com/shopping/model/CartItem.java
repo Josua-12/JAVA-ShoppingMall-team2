@@ -22,7 +22,7 @@ public class CartItem implements Serializable {
 	}
 	
 	// 상품 가격 getter
-	public int getTotalPrice() {
+	public double getTotalPrice() {
 		return product.getPrice()*quantity;
 	}
 	
