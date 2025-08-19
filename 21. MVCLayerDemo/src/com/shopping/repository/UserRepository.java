@@ -12,6 +12,7 @@ public interface UserRepository {
 
     User findById(String id);
     User findByEmail(String email);
+    List<User> findByNameContaining(String keyword);
     List<User> findAll();
 
     boolean deleteById(String id);

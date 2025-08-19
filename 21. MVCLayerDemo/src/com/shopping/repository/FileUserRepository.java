@@ -76,6 +76,17 @@ public class FileUserRepository implements UserRepository {
                 .findFirst()
                 .orElse(null);
     }
+    
+    // 이름 일부 포함 검색 (부분 일치)
+    @Override
+    public List<User> findByNameContaining(String keyword) {
+        List<User> users = FileManager.readFromFile(FILE_NAME);
+        return users.stream()
+                .filter(obj -> obj instanceof User)
+                .map(obj -> (User) obj)
+                .filter(u -> u.getName() != null && u.getName().contains(keyword))
+                .toList();
+    }
 
     @Override
     public List<User> findAll() {

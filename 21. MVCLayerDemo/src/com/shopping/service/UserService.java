@@ -77,6 +77,10 @@ public class UserService {
     public boolean deleteUser(String id) {
         return fileUserRepository.deleteById(id);
     }
+    
+    public List<User> findByName(String keyword) {
+        return fileUserRepository.findByNameContaining(keyword);
+    }
 
     public List<User> getAllUsers() {
         return fileUserRepository.findAll();
