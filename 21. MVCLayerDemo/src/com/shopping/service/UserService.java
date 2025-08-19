@@ -1,6 +1,10 @@
 package com.shopping.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.shopping.model.User;
+import com.shopping.persistence.FileManager;
 import com.shopping.repository.FileUserRepository;
 import com.shopping.util.PasswordEncoder;
 
@@ -69,7 +73,15 @@ public class UserService {
     public User findByEmail(String email) {
         return fileUserRepository.findByEmail(email);
     }
-    
+
+    public void deleteById(String id) {
+        fileUserRepository.deleteById(id);
+    }
+
+    public List<User> getAllUsers() {
+        return fileUserRepository.findAll();
+    }
+
     /**
      * 로그인 검증 (ID 기반)
      * @param id 사용자 ID
