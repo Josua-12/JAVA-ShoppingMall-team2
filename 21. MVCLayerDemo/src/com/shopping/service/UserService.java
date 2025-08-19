@@ -74,8 +74,8 @@ public class UserService {
         return fileUserRepository.findByEmail(email);
     }
 
-    public void deleteById(String id) {
-        fileUserRepository.deleteById(id);
+    public boolean deleteUser(String id) {
+        return fileUserRepository.deleteById(id);
     }
 
     public List<User> getAllUsers() {
