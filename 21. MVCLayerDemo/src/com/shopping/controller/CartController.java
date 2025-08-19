@@ -17,7 +17,7 @@ public class CartController {
     //매개변수가 없는 기본 생성자로 변경
     public CartController() {
         this.cartRepository = new FileCartRepository();
-        this.productRepository = productRepository;
+        this.productRepository = new ProductRepository();
         this.scanner = new Scanner(System.in);
     }
 

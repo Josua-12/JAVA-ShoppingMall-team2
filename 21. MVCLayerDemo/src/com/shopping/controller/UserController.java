@@ -3,10 +3,12 @@ package com.shopping.controller;
 import java.util.Scanner;
 
 import com.shopping.model.User;
+import com.shopping.model.Admin;
 import com.shopping.model.Role;
 import com.shopping.service.UserService;
 import com.shopping.service.AuthService;
-import com.shopping.repository.UserRepository;
+import com.shopping.repository.FileAdminRepository;
+import com.shopping.repository.FileUserRepository;
 
 
 /**
@@ -20,9 +22,10 @@ public class UserController {
 	private Scanner scanner;
 	
 	public UserController() {
-		UserRepository userRepository = new UserRepository();
-		this.userService = new UserService();
-		this.authService = new AuthService(userRepository);
+		FileUserRepository userRepo = new FileUserRepository();
+		FileAdminRepository adminRepo = new FileAdminRepository();
+		this.userService = new UserService(userRepo);
+		this.authService = new AuthService(userRepo, adminRepo);
 		this.scanner = new Scanner(System.in);
 	}
 	
@@ -118,9 +121,11 @@ public class UserController {
 		System.out.println("\n== 로그인 ==");
 		
 		// 현재 로그인 상태 확인
-		if (authService.getCurrentUser() != null) {
-			System.out.println("이미 로그인되어 있습니다: " + authService.getCurrentUser().getName());
-			return;
+		Object currentLoginObj = authService.getLoggedInUser();
+		if (currentLoginObj != null) {
+		    String userName = (currentLoginObj instanceof User ? ((User)currentLoginObj).getName() : ((Admin)currentLoginObj).getName());
+		    System.out.println("이미 로그인되어 있습니다: " + userName);
+		    return;
 		}
 		
 		System.out.print("이메일: ");
@@ -130,12 +135,18 @@ public class UserController {
 		String password = scanner.nextLine();
 		
 		try {
-			User currentUser = authService.login(email, password);  // User 반환
-			Role userRole = currentUser.getRole();                  // Role 추출
+			Object loginObj = authService.login(email, password);
 			
-			System.out.println("로그인 성공!");
-			System.out.println("환영합니다, " + currentUser.getName() + "님!");
-			System.out.println("역할: " + (userRole == com.shopping.model.Role.ADMIN ? "관리자" : "회원"));
+			if (loginObj instanceof User) {
+	            User currentUser = (User) currentLoginObj;
+	            Role userRole = currentUser.getRole();
+	            System.out.println("로그인 성공! 회원: " + currentUser.getName() + "님");
+	            System.out.println("역할: " + (userRole == Role.ADMIN ? "관리자" : "회원"));
+	        } else if (currentLoginObj instanceof Admin) {
+	            Admin admin = (Admin) currentLoginObj;
+	            System.out.println("로그인 성공! 관리자: " + admin.getName() + "님");
+	            System.out.println("관리 권한: " + (admin.canManageProducts() ? "있음" : "없음"));
+	        }
 		} catch (Exception e) {
 			System.out.println("로그인 실패: " + e.getMessage());
 		}
@@ -143,29 +154,38 @@ public class UserController {
 	
 	// 로그아웃 처리
 	private void logout() {
-		User currentUser = authService.getCurrentUser();
-		if (currentUser == null) {
+		Object nowLoginObj = authService.getLoggedInUser();
+		if (nowLoginObj == null) {
 			System.out.println("로그인된 사용자가 없습니다.");
 			return;
 		}
 		
-		String userName = currentUser.getName();
+		String userName = (nowLoginObj instanceof User ? ((User)nowLoginObj).getName() : ((Admin)nowLoginObj).getName());
 		authService.logout();
 		System.out.println(userName + "님이 로그아웃되었습니다.");
 	}
 	
 	// 내 정보 보기
 	private void showUserInfo() {
-		User currentUser = authService.getCurrentUser();
-		if (currentUser == null) {
-			System.out.println("로그인이 필요합니다.");
-			return;
-		}
-		
-		System.out.println("\n== 내 정보 ==");
-		System.out.println("ID: " + currentUser.getId());
-		System.out.println("이름: " + currentUser.getName());
-		System.out.println("이메일: " + currentUser.getEmail());
-		System.out.println("잔액: " + (int)currentUser.getBalance() + "원");
+	    Object obj = authService.getLoggedInUser();
+	    if (obj == null) {
+	        System.out.println("로그인이 필요합니다.");
+	        return;
+	    }
+
+	    if (obj instanceof User user) {
+	        System.out.println("\n== 내 정보 (회원) ==");
+	        System.out.println("ID: " + user.getId());
+	        System.out.println("이름: " + user.getName());
+	        System.out.println("이메일: " + user.getEmail());
+	        System.out.println("잔액: " + (int)user.getBalance() + "원");
+	    } else if (obj instanceof Admin admin) {
+	        System.out.println("\n== 내 정보 (관리자) ==");
+	        System.out.println("ID: " + admin.getId());
+	        System.out.println("이름: " + admin.getName());
+	        System.out.println("이메일: " + admin.getEmail());
+	        System.out.println("역할: " + admin.getRole());
+	        System.out.println("관리 권한: " + (admin.canManageProducts() ? "있음" : "없음"));
+	    }
 	}
 }
