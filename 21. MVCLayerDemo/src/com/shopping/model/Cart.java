@@ -1,9 +1,14 @@
 package com.shopping.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cart {
+public class Cart implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String userId;
 	private Map<String, CartItem> items;
 
