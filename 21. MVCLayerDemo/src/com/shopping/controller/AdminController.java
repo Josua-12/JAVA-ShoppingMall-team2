@@ -29,7 +29,7 @@ public class AdminController {
 		//super();
 		this.userService = new UserService();
 		this.orderService = new OrderService(null, null);
-		this.productService = new ProductService(null);
+		this.productService = new ProductService();
 		this.scanner = new Scanner(System.in);
 	}
 	
@@ -114,7 +114,7 @@ String choice = scanner.nextLine();
 	        System.out.print("상태를 변경할 주문의 ID를 입력하세요: ");
 	        String orderId = scanner.nextLine();
 
-	        Optional<Order> orderOpt = orderService.findOrderById(orderId);
+	        Optional<Order> orderOpt = orderService.findByOrderId(orderId);
 	        if (orderOpt.isEmpty()) {
 	            System.out.println("해당 ID의 주문을 찾을 수 없습니다.");
 	            return;
@@ -248,13 +248,13 @@ String choice = scanner.nextLine();
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
 			case "1":
-				searchById();		// ID로 회원 검색
+				searchUsersById();		// ID로 회원 검색
 				break;
 			case "2":
-				searchByName();		// 이름으로 회원 검색
+				searchUsersByName();		// 이름으로 회원 검색
 				break;
 			case "3":
-				searchByEmail();		// 이메일로 회원 검색
+				searchUsersByEmail();		// 이메일로 회원 검색
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
@@ -302,7 +302,7 @@ String choice = scanner.nextLine();
 
 	private void displayAllUsers() {
 		System.out.println("\n== 전체 사용자 목록 ==");
-        List<User> users = userService.findAll();
+        List<User> users = userService.getAllUsers();
         if (users.isEmpty()) {
             System.out.println("등록된 사용자가 없습니다.");
             return;
@@ -380,7 +380,7 @@ String choice = scanner.nextLine();
 	            String category = scanner.nextLine();
 
 	            Product newProduct = new Product(id, name, price, stock, category);
-	            productService.addProduct(name, price, stock);		//addproduct가 저장소에 저장되는 방식이 아니라 생성자로 생성하는 방식?
+	            productService.addProduct(name, price, stock);		//addproduct가 저장소에 저장되는 방식이 아니라 해쉬맵에 저장되는 방식?
 	            System.out.println("상품이 성공적으로 등록되었습니다.");
 	        } catch (NumberFormatException e) {
 	            System.out.println("오류: 가격과 재고는 숫자로 입력해야 합니다.");
