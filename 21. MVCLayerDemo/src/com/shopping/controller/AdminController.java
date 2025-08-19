@@ -3,6 +3,8 @@ package com.shopping.controller;
 import java.util.Scanner;
 
 import com.shopping.model.Admin;
+import com.shopping.model.User;
+import com.shopping.repository.FileUserRepository;
 import com.shopping.repository.UserRepository;
 import com.shopping.service.OrderService;
 import com.shopping.service.UserService;
@@ -13,10 +15,11 @@ public class AdminController {
 //	private ProductService productService;
 	private Scanner scanner;
     private UserRepository userRepository;
+    
 	
 	public AdminController() {
 		//super();
-		this.userRepository = new UserRepository();
+		this.userRepository = new FileUserRepository();
 		this.userService = new UserService();
 		this.orderService = new OrderService(null, null);
 //		this.productService = new ProductService;
@@ -72,13 +75,13 @@ String choice = scanner.nextLine();
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
 			case "1":
-				displayAllOrders();		// 전체 주문 목록 조회
+				//displayAllOrders();		// 전체 주문 목록 조회
 				break;
 			case "2":
-				updateOrderStatus();		// 주문 상태 변경
+				//updateOrderStatus();		// 주문 상태 변경
 				break;
 			case "3":
-				displayOrderStatistics();		// 주문 통계 조회
+				//displayOrderStatistics();		// 주문 통계 조회
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
@@ -115,7 +118,7 @@ String choice = scanner.nextLine();
 				displayUserDetails();		// 회원 상세 정보 조회
 				break;
 			case "4":
-				deactivateUser();		// 회원 강제 탈퇴
+				//deactivateUser();		// 회원 강제 탈퇴
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
@@ -125,6 +128,27 @@ String choice = scanner.nextLine();
 		}
 		
 	}
+
+
+	
+	private void displayUserDetails() {
+	    System.out.print("상세 정보를 볼 회원의 ID를 입력하세요: ");
+	    String id = scanner.nextLine().trim();
+
+	    User user = userRepository.findById(id);
+	    if (user != null) {
+	        System.out.println("\n=== 회원 상세 정보 ===");
+	        System.out.println("ID: " + user.getId());
+	        System.out.println("이름: " + user.getName());
+	        System.out.println("이메일: " + user.getEmail());
+	        System.out.println("권한(Role): " + user.getRole());
+	        System.out.println("잔액: " + user.getBalance());
+	        System.out.println("====================\n");
+	    } else {
+	        System.out.println("해당 ID의 회원이 존재하지 않습니다.");
+	    }
+	}
+
 
 
 
@@ -145,10 +169,10 @@ String choice = scanner.nextLine();
 				searchUsersById();		// ID로 회원 검색
 				break;
 			case "2":
-				searchUsersByName();		// 이름으로 회원 검색
+				//searchUsersByName();		// 이름으로 회원 검색
 				break;
 			case "3":
-				searchUsersByEmail();		// 이메일로 회원 검색
+				//searchUsersByEmail();		// 이메일로 회원 검색
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
@@ -194,16 +218,16 @@ String choice = scanner.nextLine();
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
 			case "1":
-				();		// 신규 상품 등록
+				//();		// 신규 상품 등록
 				break;
 			case "2":
-				();		// 상품 정보 수정
+				//();		// 상품 정보 수정
 				break;
 			case "3":
-				();		// 재고 관리 (입고 처리)
+				//();		// 재고 관리 (입고 처리)
 				break;
 			case "4":
-				();		// 회원 강제 탈퇴
+				//();		// 회원 강제 탈퇴
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기

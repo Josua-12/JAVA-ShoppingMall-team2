@@ -17,8 +17,6 @@ public class Admin extends User {
         super(id, password, email, name);
         // Admin의 역할은 ADMIN으로 설정합니다.
         this.role = Role.ADMIN;
-        // 관리자는 잔액이 필요 없으므로 0으로 설정하거나, 부모의 로직을 그대로 둘 수 있습니다.
-        // 여기서는 부모 생성자에서 설정된 값을 그대로 사용합니다.
     }
 
     // id, password, email, name 및 관련 getter/setter는

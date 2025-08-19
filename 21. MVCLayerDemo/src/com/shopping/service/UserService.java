@@ -1,7 +1,7 @@
 package com.shopping.service;
 
 import com.shopping.model.User;
-import com.shopping.repository.UserRepository;
+import com.shopping.repository.FileUserRepository;
 import com.shopping.util.PasswordEncoder;
 
 /**
@@ -9,14 +9,14 @@ import com.shopping.util.PasswordEncoder;
  */
 public class UserService {
     
-    private final UserRepository userRepository;
+    private final FileUserRepository fileUserRepository;
     
     public UserService() {
-        this.userRepository = new UserRepository();
+        this.fileUserRepository = new FileUserRepository();
     }
     
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService(FileUserRepository fileUserRepository) {
+        this.fileUserRepository = fileUserRepository;
     }
     
     /**
@@ -30,12 +30,12 @@ public class UserService {
      */
     public User register(String id, String password, String email, String name) throws Exception {
         // ID 중복 체크
-        if (userRepository.existsById(id)) {
+        if (fileUserRepository.existsById(id)) {
             throw new Exception("이미 존재하는 ID입니다: " + id);
         }
         
         // 이메일 중복 체크
-        if (userRepository.findByEmail(email) != null) {
+        if (fileUserRepository.findByEmail(email) != null) {
             throw new Exception("이미 사용 중인 이메일입니다: " + email);
         }
         
@@ -46,7 +46,7 @@ public class UserService {
         User user = new User(id, hashedPassword, email, name);
         
         // 저장 및 로그 출력
-        User savedUser = userRepository.save(user);
+        User savedUser = fileUserRepository.save(user);
         System.out.println("새 사용자 등록: " + id);
         
         return savedUser;
@@ -58,7 +58,7 @@ public class UserService {
      * @return User 객체 (없으면 null)
      */
     public User findById(String id) {
-        return userRepository.findById(id);
+        return fileUserRepository.findById(id);
     }
     
     /**
@@ -67,7 +67,7 @@ public class UserService {
      * @return User 객체 (없으면 null)
      */
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return fileUserRepository.findByEmail(email);
     }
     
     /**
@@ -78,7 +78,7 @@ public class UserService {
      * @throws Exception 로그인 실패 시
      */
     public User login(String id, String password) throws Exception {
-        User user = userRepository.findById(id);
+        User user = fileUserRepository.findById(id);
         if (user == null) {
             throw new Exception("해당 ID의 사용자를 찾을 수 없습니다: " + id);
         }
