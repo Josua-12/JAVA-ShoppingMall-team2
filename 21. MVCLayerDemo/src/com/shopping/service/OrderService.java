@@ -2,11 +2,13 @@ package com.shopping.service;
 
 import com.shopping.Auth.Session;
 import com.shopping.model.*;
+import com.shopping.repository.FileOrderRepository;
 import com.shopping.repository.OrderRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * OrderService
@@ -33,6 +35,7 @@ public class OrderService {
 
     private final OrderRepository orderRepo;
     private final ProductRepository productRepo;
+    private FileOrderRepository orderRepository;
 
 
 //    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
@@ -43,6 +46,7 @@ public class OrderService {
     public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;
+        this.orderRepository = orderRepository;
     }
 
     // =========================
@@ -91,6 +95,20 @@ public class OrderService {
         return orderRepo.findByDateRange(from, to).stream()
                 .filter(o -> Objects.equals(o.getUserId(), actorUserId))
                 .toList();
+    }
+    
+    public List<Order> getOrdersByUserId(String userId) {
+        // repository의 인스턴스 메서드 호출
+        return orderRepository.findByUserId(userId);
+    }
+    
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll(); // repository의 인스턴스 메서드 호출
+    }
+    
+    // 주문 상태 업데이트
+    public boolean updateOrderStatus(String orderId, OrderStatus newStatus) {
+        return orderRepository.updateStatus(orderId, newStatus);
     }
 
     // =========================
