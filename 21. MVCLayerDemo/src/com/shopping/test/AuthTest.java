@@ -59,8 +59,15 @@ public class AuthTest {
         // 2-3. 로그인 테스트
         System.out.println("\n[2-3] 로그인 테스트");
         try {
-            User loginUser = authService.login("user1@test.com", "userpass");
-            System.out.println("성공: " + loginUser.getName() + "님 로그인 완료");
+        	Object logged = authService.login("user1@test.com", "userpass");
+        	
+        	if(logged instanceof User) {
+        		User loginUser = (User) logged;
+                System.out.println("성공: " + loginUser.getName() + "님 로그인 완료");
+        	} else if (logged instanceof Admin ) {
+        		Admin loginAdmin = (Admin) logged;
+        		System.out.println("관리자 로그인 : " + loginAdmin.getName() + "님 로그인 완료");
+        	}
         } catch (Exception e) {
             System.out.println("실패: " + e.getMessage());
         }
