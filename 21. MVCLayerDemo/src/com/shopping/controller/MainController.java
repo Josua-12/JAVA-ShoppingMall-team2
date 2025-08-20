@@ -18,14 +18,14 @@ public class MainController {
 
     // 다른 컨트롤러들(필요한 것만 우선)
     private final OrderController orderController;
-    private final UserController2 userController;
+    private final UserController userController;
     private final ProductController productController;
     private final CartController cartController;
     private final AdminController adminController;
 
     public MainController(Session session,
                           OrderController orderController, 
-                          UserController2 userController, 
+                          UserController userController, 
                           ProductController productController,
                           CartController cartController,
                           AdminController adminController ) {
@@ -61,7 +61,7 @@ public class MainController {
                     case "3" -> cartController.runCartMenu(session.getUserId());	// 장바구니 관리
                     case "4" -> orderController.orderMenu();   			// 주문하기 (2.4.1)
                     case "5" -> orderController.orderHistoryMenu(); 	// 주문 내역 (2.4.2)
-//                    case "6" -> myPage();                           // 마이페이지
+                    case "6" -> userController.myPage(session.getUser());   // 마이페이지
                     case "7" -> userController.logout();            		// 로그아웃
                     default -> warn();
                 }
@@ -74,7 +74,7 @@ public class MainController {
                     case "3" -> cartController.runCartMenu(session.getUserId());// 장바구니 관리
                     case "4" -> orderController.orderMenu();   				// 주문하기 (2.4.1)
                     case "5" -> orderController.orderHistoryMenu(); 		// 주문 내역 (2.4.2)
-//                    case "6" -> myPage();                           // 마이페이지
+                    case "6" -> userController.myPage(session.getUser());   // 마이페이지
                     case "7" -> userController.logout();            		// 로그아웃
                     case "8" -> adminController.handleProductManagement();	// [관리] 상품 관리
                     case "9" -> adminController.handleUserManagement();     // [관리] 사용자 관리
