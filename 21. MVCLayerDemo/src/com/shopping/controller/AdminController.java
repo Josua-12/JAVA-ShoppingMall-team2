@@ -16,6 +16,7 @@ import com.shopping.model.User;
 import com.shopping.repository.UserRepository;
 import com.shopping.service.OrderService;
 import com.shopping.service.ProductService;
+import com.shopping.service.ReportService;
 import com.shopping.service.UserService;
 
 public class AdminController {
@@ -23,14 +24,15 @@ public class AdminController {
 	private OrderService orderService;
 	private ProductService productService;
 	private Scanner scanner;
-    private UserRepository userRepository;
+    private ReportService reportService;
 	
-	public AdminController() {
-		//super();
-		this.userService = new UserService();
-		this.orderService = new OrderService(null, null);
-		this.productService = new ProductService(null);
-		this.scanner = new Scanner(System.in);
+    public AdminController(UserService userService, OrderService orderService, ProductService productService, ReportService reportService) {
+        this.userService = userService;
+        this.orderService = orderService;
+        this.productService = productService;
+        this.reportService = reportService; // 전달받은 ReportService 사용
+        this.scanner = new Scanner(System.in);
+		
 	}
 	
 	
@@ -114,7 +116,7 @@ String choice = scanner.nextLine();
 	        System.out.print("상태를 변경할 주문의 ID를 입력하세요: ");
 	        String orderId = scanner.nextLine();
 
-	        Optional<Order> orderOpt = orderService.findOrderById(orderId);
+	        Optional<Order> orderOpt = orderService.findByOrderId(orderId);
 	        if (orderOpt.isEmpty()) {
 	            System.out.println("해당 ID의 주문을 찾을 수 없습니다.");
 	            return;
@@ -145,43 +147,51 @@ String choice = scanner.nextLine();
 	    }
 	 
 	 private void displayOrderStatistics() {
-	        System.out.println("\n== 주문 통계 조회 ==");
-	        List<Order> orders = orderService.getAllOrders();
-	        if (orders.isEmpty()) {
-	            System.out.println("분석할 주문 데이터가 없습니다.");
-	            return;
-	        }
+		    System.out.println("\n== 주문 통계 조회 ==");
+		    
+		    // 1. 일별 매출 통계 (ReportService 사용)
+		    System.out.println("\n--- 일별 총 매출 ---");
+		    System.out.print("매출 조회를 시작할 날짜(YYYY-MM-DD)를 입력하세요 (전체 기간은 Enter): ");
+		    String fromStr = scanner.nextLine();
+		    System.out.print("매출 조회를 종료할 날짜(YYYY-MM-DD)를 입력하세요 (전체 기간은 Enter): ");
+		    String toStr = scanner.nextLine();
 
-	        // 1. 일별 매출 통계
-	        Map<LocalDate, Double> dailySales = orders.stream()
-	                .collect(Collectors.groupingBy(
-	                        order -> order.getOrderDate().toLocalDate(),
-	                        Collectors.summingDouble(Order::getTotalPrice)
-	                ));
+		    try {
+		        LocalDate from = fromStr.isBlank() ? null : LocalDate.parse(fromStr);
+		        LocalDate to = toStr.isBlank() ? null : LocalDate.parse(toStr);
+		        int totalSales = reportService.salesByDate(from, to);
+		        System.out.printf("조회 기간 총 매출: %,d원\n", totalSales);
 
-	        System.out.println("\n--- 일별 총 매출 ---");
-	        dailySales.entrySet().stream()
-	                .sorted(Map.Entry.comparingByKey())
-	                .forEach(entry -> System.out.printf("%s: %,.0f원\n", entry.getKey(), entry.getValue()));
+		    } catch (Exception e) {
+		        System.out.println("날짜 형식이 올바르지 않습니다. (YYYY-MM-DD)");
+		        return;
+		    }
 
-	        // 2. 상품별 판매 통계
-	        Map<String, int[]> productSales = orders.stream()
-	                .flatMap(order -> order.getItems().stream())
-	                .collect(Collectors.groupingBy(
-	                        OrderItem::getProductId,
-	                        Collectors.reducing(new int[2],
-	                                item -> new int[]{item.getQuantity(), item.getLineTotal()},
-	                                (a, b) -> new int[]{a[0] + b[0], a[1] + b[1]})
-	                ));
 
-	        System.out.println("\n--- 상품별 판매 현황 (판매량, 총 매출) ---");
-	        productSales.forEach((productId, data) -> {
-	            String productName = productService.getProductById(productId)
-	                                                 .map(Product::getName)
-	                                                 .orElse("알 수 없는 상품");
-	            System.out.printf("%s (%s): %d개, %,d원\n", productName, productId, data[0], data[1]);
-	        });
-	    }
+		    // 2. 상품별 판매 통계 (ReportService 사용)
+		    System.out.println("\n--- 상위 판매 상품 (판매량 기준) ---");
+		    System.out.print("조회할 상위 상품 개수를 입력하세요: ");
+		    int topN = Integer.parseInt(scanner.nextLine());
+		    
+		    Map<String, Integer> topProducts = reportService.topProducts(topN);
+		    if (topProducts.isEmpty()) {
+		        System.out.println("판매된 상품이 없습니다.");
+		    } else {
+		        topProducts.forEach((productId, quantity) -> {
+		            String productName = productService.getProductById(productId)
+		                                                 .map(Product::getName)
+		                                                 .orElse("알 수 없는 상품");
+		            System.out.printf("- %s (%s): %d개 판매\n", productName, productId, quantity);
+		        });
+		    }
+
+		    // 3. 주문 상태별 통계 (ReportService 사용)
+		    System.out.println("\n--- 주문 상태별 현황 ---");
+		    Map<OrderStatus, Long> statusCounts = reportService.orderCountByStatus();
+		    statusCounts.forEach((status, count) -> 
+		        System.out.printf("- %s: %d건\n", status.getDisplayName(), count)
+		    );
+		}
 	 
 
 
@@ -248,13 +258,13 @@ String choice = scanner.nextLine();
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
 			case "1":
-				searchById();		// ID로 회원 검색
+				searchUsersById();		// ID로 회원 검색
 				break;
 			case "2":
-				searchByName();		// 이름으로 회원 검색
+				searchUsersByName();		// 이름으로 회원 검색
 				break;
 			case "3":
-				searchByEmail();		// 이메일로 회원 검색
+				searchUsersByEmail();		// 이메일로 회원 검색
 				break;
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
@@ -302,7 +312,7 @@ String choice = scanner.nextLine();
 
 	private void displayAllUsers() {
 		System.out.println("\n== 전체 사용자 목록 ==");
-        List<User> users = userService.findAll();
+        List<User> users = userService.getAllUsers();
         if (users.isEmpty()) {
             System.out.println("등록된 사용자가 없습니다.");
             return;
@@ -380,7 +390,7 @@ String choice = scanner.nextLine();
 	            String category = scanner.nextLine();
 
 	            Product newProduct = new Product(id, name, price, stock, category);
-	            productService.addProduct(name, price, stock);		//addproduct가 저장소에 저장되는 방식이 아니라 생성자로 생성하는 방식?
+	            productService.addProduct(newProduct);		//addproduct가 저장소에 저장되지 않아 정보가 휘발성
 	            System.out.println("상품이 성공적으로 등록되었습니다.");
 	        } catch (NumberFormatException e) {
 	            System.out.println("오류: 가격과 재고는 숫자로 입력해야 합니다.");

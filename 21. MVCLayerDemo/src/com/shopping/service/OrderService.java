@@ -111,6 +111,11 @@ public class OrderService {
         return orderRepository.updateStatus(orderId, newStatus);
     }
 
+    //주문 단건 조회 (Read by OrderID)
+    public synchronized Optional<Order> findByOrderId(String orderId) {
+        return orderRepository.findById(orderId);
+    }
+
     // =========================
     // 상태 전이
     // =========================
