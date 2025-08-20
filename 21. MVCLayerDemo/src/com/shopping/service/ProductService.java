@@ -29,7 +29,7 @@ public class ProductService {
     /**
      * 주어진 ID에 해당하는 상품을 검색하여 Optional<Product>로 반환합니다.
      */
-    public Optional<Product> getProductById(String id) {
+    public Optional<Product> findProductById(String id) {
         return fileProductRepository.findById(id);
     }
     
