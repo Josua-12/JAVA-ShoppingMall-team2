@@ -178,7 +178,7 @@ String choice = scanner.nextLine();
 		        System.out.println("판매된 상품이 없습니다.");
 		    } else {
 		        topProducts.forEach((productId, quantity) -> {
-		            String productName = productService.getProductById(productId)
+		            String productName = productService.findProductById(productId)
 		                                                 .map(Product::getName)
 		                                                 .orElse("알 수 없는 상품");
 		            System.out.printf("- %s (%s): %d개 판매\n", productName, productId, quantity);
@@ -404,7 +404,7 @@ String choice = scanner.nextLine();
 	        System.out.print("수정할 상품의 ID를 입력하세요: ");
 	        String id = scanner.nextLine();
 
-	        Optional<Product> optionalProduct = productService.getProductById(id);
+	        Optional<Product> optionalProduct = productService.findProductById(id);
 	        if (optionalProduct.isEmpty()) {
 	            System.out.println("해당 ID의 상품을 찾을 수 없습니다.");
 	            return;
@@ -456,7 +456,7 @@ String choice = scanner.nextLine();
 	        System.out.print("재고를 추가할 상품의 ID를 입력하세요: ");
 	        String id = scanner.nextLine();
 
-	        Optional<Product> optionalProduct = productService.getProductById(id);
+	        Optional<Product> optionalProduct = productService.findProductById(id);
 	        if (optionalProduct.isEmpty()) {
 	            System.out.println("해당 ID의 상품을 찾을 수 없습니다.");
 	            return;
@@ -470,7 +470,7 @@ String choice = scanner.nextLine();
 	                return;
 	            }
 	            productService.addStock(id, quantity);
-	            System.out.println("재고가 성공적으로 추가되었습니다. 현재 재고: " + productService.getProductById(id).get().getStock());
+	            System.out.println("재고가 성공적으로 추가되었습니다. 현재 재고: " + productService.findProductById(id).get().getStock());
 	        } catch (NumberFormatException e) {
 	            System.out.println("오류: 수량은 숫자로 입력해야 합니다.");
 	        } catch (Exception e) {
