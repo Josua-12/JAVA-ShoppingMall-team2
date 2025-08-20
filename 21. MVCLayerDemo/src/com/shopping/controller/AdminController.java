@@ -196,7 +196,7 @@ String choice = scanner.nextLine();
 
 
 
-	private void handleUserManagement() {
+	public void handleUserManagement() {
 		while(true) {
 			System.out.println("\n== 사용자 관리 메뉴 ==");
 			System.out.println("1. 전체 회원 목록 조회");
@@ -341,7 +341,7 @@ String choice = scanner.nextLine();
 
 
 
-	private void handleProductManagement() {
+	public void handleProductManagement() {
 		while(true) {
 			System.out.println("\n== 상품 관리 메뉴 ==");
 			System.out.println("1. 신규 상품 등록");
