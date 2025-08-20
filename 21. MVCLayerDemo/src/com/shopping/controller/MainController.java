@@ -18,14 +18,14 @@ public class MainController {
 
     // 다른 컨트롤러들(필요한 것만 우선)
     private final OrderController orderController;
-    private final UserController userController;
+    private final UserController2 userController;
     private final ProductController productController;
     private final CartController cartController;
     private final AdminController adminController;
 
     public MainController(Session session,
                           OrderController orderController, 
-                          UserController userController, 
+                          UserController2 userController, 
                           ProductController productController,
                           CartController cartController,
                           AdminController adminController ) {

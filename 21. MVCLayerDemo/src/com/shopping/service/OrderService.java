@@ -35,7 +35,12 @@ public class OrderService {
 
     private final OrderRepository orderRepo;
     private final ProductRepository productRepo;
+<<<<<<< HEAD
     private final FileOrderRepository orderRepository;
+=======
+    private FileOrderRepository orderRepository;
+    private OrderService orderService;
+>>>>>>> 5125b79ecee8c5bb0265f72000fb3761320ee7ab
 
 
 //    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
