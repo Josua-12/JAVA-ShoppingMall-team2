@@ -29,7 +29,7 @@ public interface OrderRepository {
 		// 삭제
 		boolean delete(String orderId);
 		
-//	    // (선택) 페이징
+	    // (선택) 페이징
 //	    List<Order> findAll(int page, int size);
 		
 	    // ID 생성기 제공 (파일 구현체에 위임 가능)
