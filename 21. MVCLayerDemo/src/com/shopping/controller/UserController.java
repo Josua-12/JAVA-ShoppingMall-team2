@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.shopping.model.User;
+import com.shopping.Auth.Session;
 import com.shopping.model.Admin;
 import com.shopping.model.Order;
 import com.shopping.model.Role;
@@ -24,17 +25,20 @@ public class UserController {
 	private AuthService authService;
 	private Scanner scanner;
 	private OrderService orderService;
+	private Session session;
+
 	
-	public UserController() {
+	public UserController(Session session) {
 		FileUserRepository userRepo = new FileUserRepository();
 		FileAdminRepository adminRepo = new FileAdminRepository();
 		this.userService = new UserService(userRepo);
 		this.authService = new AuthService(userRepo, adminRepo);
 		this.scanner = new Scanner(System.in);
+		this.session = session;
 	}
 	
 	// 마이페이지
-	public void myPage(User user) {
+	public void myPage(Session session) {
 		while(true) {
 			System.out.println("\n╔════════════════════════════════════════════╗");
 	        System.out.println("║                   마이 페이지                   ║");
@@ -75,11 +79,11 @@ public class UserController {
 	}
 	// 회원 탈퇴
     private void deleteAccount() {
-        User user = (User) authService.getLoggedInUser();
-        if (user == null) {
-            System.out.println("로그인이 필요합니다.");
-            return;
-        }
+    	User user = userService.findById(session.getUserId());
+    	if (user == null || session.getRole() != Role.USER) {
+    	    System.out.println("회원 전용 기능입니다.");
+    	    return;
+    	}
         System.out.print("정말 탈퇴하시겠습니까? (Y/N): ");
         String confirm = scanner.nextLine();
         if (confirm.equalsIgnoreCase("Y")) {
