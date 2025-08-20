@@ -1,7 +1,7 @@
 package com.shopping.service;
 
 import com.shopping.model.Product;
-import com.shopping.repository.FileProductRepository; // FileProductRepository 임포트
+import com.shopping.repository.ProductRepository; // FileProductRepository 임포트
 import java.util.List;
 import java.util.Optional;
 
@@ -12,32 +12,37 @@ import java.util.Optional;
 public class ProductService {
 
     // [수정됨] 변수명도 fileProductRepository로 변경
-    private final FileProductRepository fileProductRepository;
+    private final ProductRepository ProductRepository;
 
     // [수정됨] 생성자를 통해 외부에서 FileProductRepository 구현체를 주입받음
-    public ProductService(FileProductRepository fileProductRepository) {
-        this.fileProductRepository = fileProductRepository;
+    public ProductService(ProductRepository ProductRepository) {
+        this.ProductRepository = ProductRepository;
     }
 
     /**
      * 모든 상품 목록을 반환합니다.
      */
     public List<Product> getAllProducts() {
-        return fileProductRepository.findAll();
+        return ProductRepository.findAll();
     }
 
     /**
      * 주어진 ID에 해당하는 상품을 검색하여 Optional<Product>로 반환합니다.
      */
+<<<<<<< HEAD
     public Optional<Product> findProductById(String id) {
         return fileProductRepository.findById(id);
+=======
+    public Optional<Product> getProductById(String id) {
+        return ProductRepository.findById(id);
+>>>>>>> 9c84141c1eaa0cfb9c9027700f6679c321c659f6
     }
     
     /**
      * 이름으로 상품을 검색합니다.
      */
     public List<Product> findProductsByName(String name) {
-        return fileProductRepository.findBynameContains(name);
+        return ProductRepository.findBynameContains(name);
     }
 
     /**
@@ -45,25 +50,25 @@ public class ProductService {
      */
     public Product addProduct(Product product) {
         validateProductData(product.getName(), product.getPrice(), product.getStock());
-        return fileProductRepository.save(product);
+        return ProductRepository.save(product);
     }
 
     /**
      * 기존 상품의 정보를 수정합니다.
      */
     public Product updateProduct(Product product) {
-        fileProductRepository.findById(product.getId())
+        ProductRepository.findById(product.getId())
                 .orElseThrow(() -> new IllegalArgumentException("오류: ID " + product.getId() + "에 해당하는 상품을 찾을 수 없습니다."));
 
         validateProductData(product.getName(), product.getPrice(), product.getStock());
-        return fileProductRepository.save(product);
+        return ProductRepository.save(product);
     }
     
     /**
      * 특정 상품을 삭제합니다.
      */
     public boolean deleteProduct(String id) {
-        return fileProductRepository.deleteById(id);
+        return ProductRepository.deleteById(id);
     }
 
     /**
@@ -73,11 +78,11 @@ public class ProductService {
         if (quantity <= 0) {
             throw new IllegalArgumentException("추가할 재고는 0보다 커야 합니다.");
         }
-        Product product = fileProductRepository.findById(id)
+        Product product = ProductRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("오류: ID " + id + "에 해당하는 상품을 찾을 수 없습니다."));
         
         product.setStock(product.getStock() + quantity);
-        fileProductRepository.save(product);
+        ProductRepository.save(product);
     }
 
     // --- 유효성 검사를 위한 Private Helper Method ---
