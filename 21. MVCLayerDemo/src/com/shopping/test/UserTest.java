@@ -1,6 +1,8 @@
-package com.shopping.model;
+package com.shopping.test;
 
 import org.junit.jupiter.api.Test;
+
+import com.shopping.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Set;
