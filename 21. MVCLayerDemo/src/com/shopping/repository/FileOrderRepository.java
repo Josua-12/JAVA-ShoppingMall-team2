@@ -73,15 +73,14 @@ public abstract class FileOrderRepository implements OrderRepository {
 
     // 페이징 지원 버전 (현재는 주석 처리)
     // 인터페이스에 메서드가 없으면 @Override 제거 후 구현체 전용으로 둘 수 있음
-//    @Override
-//    public synchronized List<Order> findAll(int page, int size) {
-//        if (page < 0 || size <= 0) throw new IllegalArgumentException("invalid page/size");
-//        List<Order> all = new ArrayList<>(cache.values());
-//        int from = page * size;
-//        if (from >= all.size()) return Collections.emptyList();
-//        int to = Math.min(from + size, all.size());
-//        return all.subList(from, to);
-//    }
+   public synchronized List<Order> findAll(int page, int size) {
+       if (page < 0 || size <= 0) throw new IllegalArgumentException("invalid page/size");
+       List<Order> all = new ArrayList<>(cache.values());
+       int from = page * size;
+       if (from >= all.size()) return Collections.emptyList();
+       int to = Math.min(from + size, all.size());
+       return all.subList(from, to);
+   }
 
     /**
      * 주문 삭제 (Delete)

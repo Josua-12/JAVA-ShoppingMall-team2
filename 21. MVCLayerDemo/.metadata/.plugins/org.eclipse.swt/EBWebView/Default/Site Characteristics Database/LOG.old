@@ -1,2 +1,5 @@
-2025/08/17-20:18:28.651 1ce4 Creating DB D:\JAVA-ShoppingMall-Team2\21. MVCLayerDemo\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Site Characteristics Database since it was missing.
-2025/08/17-20:18:29.238 1ce4 Reusing MANIFEST D:\JAVA-ShoppingMall-Team2\21. MVCLayerDemo\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Site Characteristics Database/MANIFEST-000001
+2025/08/20-17:26:04.245 1828 Log #3: 2 ops saved to Table #4 OK
+2025/08/20-17:26:04.254 1828 Archiving C:\Users\user\Desktop\PRJ_git\JAVA-ShoppingMall-team2\21. MVCLayerDemo\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Site Characteristics Database/000003.log: OK
+2025/08/20-17:26:04.254 1828 Table #4: 2 entries OK
+2025/08/20-17:26:04.257 1828 Archiving C:\Users\user\Desktop\PRJ_git\JAVA-ShoppingMall-team2\21. MVCLayerDemo\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Site Characteristics Database/MANIFEST-000001: OK
+2025/08/20-17:26:04.269 1828 **** Repaired leveldb C:\Users\user\Desktop\PRJ_git\JAVA-ShoppingMall-team2\21. MVCLayerDemo\.metadata\.plugins\org.eclipse.swt\EBWebView\Default\Site Characteristics Database; recovered 1 files; 191 bytes. Some data may have been lost. ****

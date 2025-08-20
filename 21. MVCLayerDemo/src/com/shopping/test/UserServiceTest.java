@@ -1,3 +1,7 @@
+import com.shopping.repository.UserRepository;
+import com.shopping.service.UserService;
+import com.shopping.util.PasswordEncoder;
+
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
