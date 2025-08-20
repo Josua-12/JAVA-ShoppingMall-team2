@@ -5,15 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
-import com.shopping.model.Admin;
 import com.shopping.model.Order;
-import com.shopping.model.OrderItem;
 import com.shopping.model.OrderStatus;
 import com.shopping.model.Product;
 import com.shopping.model.User;
-import com.shopping.repository.UserRepository;
 import com.shopping.service.OrderService;
 import com.shopping.service.ProductService;
 import com.shopping.service.ReportService;
@@ -348,6 +344,7 @@ String choice = scanner.nextLine();
 			System.out.println("2. 상품 정보 수정");
 			System.out.println("3. 상품 삭제");
 			System.out.println("4. 재고 관리 (입고 처리)");
+			System.out.println("5. 상품 목록 조회");
 			System.out.println("0. 돌아가기");
 			System.out.print("선택: ");
 			
@@ -367,6 +364,8 @@ String choice = scanner.nextLine();
 			case "4":
 				manageProductStock();		// 재고 관리 (입고 처리)
 				break;
+			case "5":
+				listProducts();				//상품 목록 출력
 			case "0":
 				return;			// 메인 메뉴로 돌아가기
 			default:
@@ -475,6 +474,26 @@ String choice = scanner.nextLine();
 	            System.out.println("오류: 수량은 숫자로 입력해야 합니다.");
 	        } catch (Exception e) {
 	            System.out.println("재고 추가 중 오류 발생: " + e.getMessage());
+	        }
+	    }
+	    
+	    /** 상품 목록 출력 */
+	    public void listProducts() {
+	        System.out.println("\n--- 상품 목록 ---");
+	        List<Product> products = productService.getAllProducts();
+	        if (products.isEmpty()) {
+	            System.out.println("등록된 상품이 없습니다.");
+	        } else {
+	            System.out.printf("%-20s %-20s %-10s %-5s %-10s\n", "ID", "이름", "가격", "재고", "카테고리");
+	            System.out.println("-------------------------------------------------------------------");
+	            for (Product product : products) {
+	                System.out.printf("%-20s %-20s %-10.0f %-5d %-10s\n",
+	                        product.getId(),
+	                        product.getName(),
+	                        product.getPrice(),
+	                        product.getStock(),
+	                        product.getCategory());
+	            }
 	        }
 	    }
 
