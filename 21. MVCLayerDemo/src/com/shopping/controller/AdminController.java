@@ -9,6 +9,7 @@ import java.util.Scanner;
 import com.shopping.model.Order;
 import com.shopping.model.OrderStatus;
 import com.shopping.model.Product;
+import com.shopping.model.ProductCategory;
 import com.shopping.model.User;
 import com.shopping.service.OrderService;
 import com.shopping.service.ProductService;
@@ -385,12 +386,16 @@ String choice = scanner.nextLine();
 	            double price = Double.parseDouble(scanner.nextLine());
 	            System.out.print("재고: ");
 	            int stock = Integer.parseInt(scanner.nextLine());
-	            System.out.print("카테고리: ");
-	            String category = scanner.nextLine();
+	            System.out.printf("카테고리 (%s): ", ProductCategory.getCategoryNames());
+				String categoryInput = scanner.nextLine();
+				ProductCategory category = ProductCategory.fromString(categoryInput);
+				System.out.print("상품 설명: ");
+				String description = scanner.nextLine();
 
-	            Product newProduct = new Product(id, name, price, stock, category);
-	            productService.addProduct(newProduct);		//addproduct가 저장소에 저장되지 않아 정보가 휘발성
-	            System.out.println("상품이 성공적으로 등록되었습니다.");
+				Product newProduct = new Product(null, name, category, price, stock, description);
+		        productService.addProduct(newProduct);
+		        System.out.println("상품이 성공적으로 등록되었습니다. (ID: " + newProduct.getId() + ")");
+
 	        } catch (NumberFormatException e) {
 	            System.out.println("오류: 가격과 재고는 숫자로 입력해야 합니다.");
 	        } catch (Exception e) {
@@ -425,9 +430,11 @@ String choice = scanner.nextLine();
 	            String stockStr = scanner.nextLine();
 	            if (!stockStr.isBlank()) product.setStock(Integer.parseInt(stockStr));
 
-	            System.out.print("새 카테고리 (변경 없으면 Enter): ");
-	            String category = scanner.nextLine();
-	            if (!category.isBlank()) product.setCategory(category);
+	            System.out.printf("새 카테고리 (현재: %s, 변경 없으면 Enter): ", product.getCategory().name());
+				String categoryStr = scanner.nextLine();
+				if (!categoryStr.isBlank()) {
+					product.setCategory(ProductCategory.fromString(categoryStr));
+				}
 
 	            productService.updateProduct(product);
 	            System.out.println("상품 정보가 성공적으로 수정되었습니다.");
@@ -480,21 +487,20 @@ String choice = scanner.nextLine();
 	    /** 상품 목록 출력 */
 	    public void listProducts() {
 	        System.out.println("\n--- 상품 목록 ---");
-	        List<Product> products = productService.getAllProducts();
+	        List<Product> products = productService.getAllProducts(1, Integer.MAX_VALUE);
 	        if (products.isEmpty()) {
 	            System.out.println("등록된 상품이 없습니다.");
 	        } else {
-	            System.out.printf("%-20s %-20s %-10s %-5s %-10s\n", "ID", "이름", "가격", "재고", "카테고리");
+	            System.out.printf("%-10s %-20s %-12s %-5s %-10s\n", "ID", "이름", "가격", "재고", "카테고리");
 	            System.out.println("-------------------------------------------------------------------");
 	            for (Product product : products) {
-	                System.out.printf("%-20s %-20s %-10.0f %-5d %-10s\n",
+	                System.out.printf("%-10s %-20s %-12.0f %-5d %-10s\n",
 	                        product.getId(),
 	                        product.getName(),
 	                        product.getPrice(),
 	                        product.getStock(),
-	                        product.getCategory());
+	                        product.getCategory().name()); // [수정] Enum의 이름을 출력하도록 .name() 추가
 	            }
 	        }
 	    }
-
 }
