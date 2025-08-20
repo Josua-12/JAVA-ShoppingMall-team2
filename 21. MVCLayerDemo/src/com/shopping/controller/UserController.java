@@ -155,7 +155,7 @@ public class UserController {
 	}
 
 	// 회원가입 처리
-	private void register() {
+	public void register() {
 		System.out.println("\n== 회원가입 ==");
 		
 		// 아이디 입력 받기
@@ -207,7 +207,7 @@ public class UserController {
 	}
 	
 	// 로그인 처리
-	private void login() {
+	public void login() {
 		System.out.println("\n== 로그인 ==");
 		
 		// 현재 로그인 상태 확인
@@ -243,7 +243,7 @@ public class UserController {
 	}
 	
 	// 로그아웃 처리
-	private void logout() {
+	public void logout() {
 		Object nowLoginObj = authService.getLoggedInUser();
 		if (nowLoginObj == null) {
 			System.out.println("로그인된 사용자가 없습니다.");
