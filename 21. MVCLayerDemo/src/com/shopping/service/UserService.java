@@ -1,10 +1,8 @@
 package com.shopping.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.shopping.model.User;
-import com.shopping.persistence.FileManager;
 import com.shopping.repository.FileUserRepository;
 import com.shopping.util.PasswordEncoder;
 
