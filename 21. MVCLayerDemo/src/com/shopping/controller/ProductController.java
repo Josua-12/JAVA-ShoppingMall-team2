@@ -29,52 +29,22 @@ public class ProductController {
      * 애플리케이션의 메인 메뉴를 시작합니다.
      */
     public void startMainMenu() {
-        int choice;
-        do {
-            System.out.println("\n============================");
-            System.out.println("     SHOPPING MAIN MENU");
-            System.out.println("============================");
-            System.out.println("1. 상품 조회하기");
-            System.out.println("2. 상품 관리 (관리자)");
-            System.out.println("0. 시스템 종료");
-            System.out.print("메뉴 선택: ");
-
-            try {
-                choice = Integer.parseInt(scanner.nextLine());
-                switch (choice) {
-                    case 1:
-                        startProductSearchMenu();
-                        break;
-                    case 2:
-                        startAdminMenu();
-                        break;
-                    case 0:
-                        System.out.println("시스템을 종료합니다.");
-                        break;
-                    default:
-                        System.out.println("잘못된 메뉴 선택입니다.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("오류: 유효한 숫자 메뉴를 입력하세요.");
-                choice = -1; // 루프를 계속하기 위해 초기화
-            }
-        } while (choice != 0);
+    	startProductSearchMenu();
     }
 
     /**
      * 일반 사용자를 위한 상품 조회 메뉴를 표시합니다.
      */
-    private void startProductSearchMenu() {
+    public void startProductSearchMenu() {
         int choice;
         do {
             System.out.println("\n--- 상품 조회 메뉴 ---");
             System.out.println("1. 전체 상품 목록 (페이징)");
-            System.out.println("2. 베스트셀러 보기");
-            System.out.println("3. 신상품 보기");
-            System.out.println("4. 카테고리별 상품 조회");
-            System.out.println("5. 가격대별 상품 조회");
-            System.out.println("6. 상품명으로 검색");
-            System.out.println("7. 상품 상세 정보 조회");
+            System.out.println("2. 카테고리별 상품 조회");
+            System.out.println("3. 가격대별 상품 조회");
+            System.out.println("4. 베스트셀러 보기");
+            System.out.println("5. 신상품 보기");
+            System.out.println("6. 상품 상세 정보 조회");
             System.out.println("0. 메인 메뉴로 돌아가기");
             System.out.print("메뉴 선택: ");
 
@@ -82,12 +52,11 @@ public class ProductController {
                 choice = Integer.parseInt(scanner.nextLine());
                 switch (choice) {
                     case 1: listAllProductsPaginated(); break;
-                    case 2: listBestSellers(); break;
-                    case 3: listNewArrivals(); break;
-                    case 4: searchByCategory(); break;
-                    case 5: searchByPriceRange(); break;
-                    case 6: searchByName(); break;
-                    case 7: viewProductDetail(); break;
+                    case 2: searchByCategory(); break;
+                    case 3: searchByPriceRange(); break;
+                    case 4: listBestSellers(); break;
+                    case 5: listNewArrivals(); break;
+                    case 6: viewProductDetail(); break;
                     case 0: System.out.println("메인 메뉴로 돌아갑니다."); break;
                     default: System.out.println("잘못된 메뉴 선택입니다.");
                 }
@@ -98,36 +67,6 @@ public class ProductController {
         } while (choice != 0);
     }
 
-    /**
-     * 관리자를 위한 상품 관리 메뉴를 표시합니다.
-     */
-    private void startAdminMenu() {
-        int choice;
-        do {
-            System.out.println("\n--- 상품 관리 메뉴 (관리자) ---");
-            System.out.println("1. 신규 상품 등록");
-            System.out.println("2. 상품 정보 수정");
-            System.out.println("3. 상품 삭제");
-            System.out.println("4. 재고 관리 (입고 처리)");
-            System.out.println("0. 메인 메뉴로 돌아가기");
-            System.out.print("메뉴 선택: ");
-
-            try {
-                choice = Integer.parseInt(scanner.nextLine());
-                switch (choice) {
-                    case 1: addProduct(); break;
-                    case 2: updateProduct(); break;
-                    case 3: deleteProduct(); break;
-                    case 4: changeProductStock(); break;
-                    case 0: System.out.println("메인 메뉴로 돌아갑니다."); break;
-                    default: System.out.println("잘못된 메뉴 선택입니다.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("오류: 유효한 숫자 메뉴를 입력하세요.");
-                choice = -1;
-            }
-        } while (choice != 0);
-    }
 
     /**
      * 전체 상품 목록을 페이지 단위로 나누어 보여줍니다.
