@@ -47,7 +47,7 @@ public class AdminController {
 			System.out.println("0. 돌아가기");
 			System.out.print("선택: ");
 			
-String choice = scanner.nextLine();
+			String choice = scanner.nextLine();
 			
 			// 사용자 선택에 따른 메소드 호출
 			switch(choice) {
