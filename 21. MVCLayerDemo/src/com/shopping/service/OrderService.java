@@ -35,7 +35,7 @@ public class OrderService {
 
     private final OrderRepository orderRepo;
     private final ProductRepository productRepo;
-    private FileOrderRepository orderRepository;
+    private final FileOrderRepository orderRepository;
 
 
 //    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
@@ -43,7 +43,7 @@ public class OrderService {
 //        this.productRepo = Objects.requireNonNull(productRepo);
 //    }
     
-    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
+    public OrderService(OrderRepository orderRepo, ProductRepository productRepo, FileOrderRepository orderRepository) {
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;
         this.orderRepository = orderRepository;
