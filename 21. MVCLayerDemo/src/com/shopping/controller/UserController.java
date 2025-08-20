@@ -38,7 +38,7 @@ public class UserController {
 	}
 	
 	// 마이페이지
-	public void myPage(Session session) {
+	public void myPage(User user) {
 		while(true) {
 			System.out.println("\n╔════════════════════════════════════════════╗");
 	        System.out.println("║                   마이 페이지                   ║");
