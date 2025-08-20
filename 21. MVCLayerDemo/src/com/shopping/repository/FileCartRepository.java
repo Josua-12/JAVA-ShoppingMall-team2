@@ -2,6 +2,7 @@ package com.shopping.repository;
 
 import com.shopping.model.Cart;
 import com.shopping.persistence.FileManager;
+import com.shopping.util.Constants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class FileCartRepository {
+public class FileCartRepository implements CartRepository {
 
     // 모든 사용자의 장바구니 정보를 담을 파일 이름
-    private static final String FILE_NAME = "carts.dat";
+    private static final String FILE_NAME = Constants.CART_DATA_FILE;
     private Map<String, Cart> database;
 
     
@@ -22,11 +23,12 @@ public class FileCartRepository {
 
 
     //옵셔널을 이용한 유저아이디로 카트찾는 메서드
+    @Override
     public Optional<Cart> findByUserId(String userId) {
         return Optional.ofNullable(database.get(userId));
     }
 
-
+    @Override
     public void save(Cart cart) {
         database.put(cart.getUserId(), cart);
         saveData();
@@ -34,6 +36,7 @@ public class FileCartRepository {
 
 
     //특정아이디의 카트 삭제
+    @Override
     public void deleteByUserId(String userId) {
         database.remove(userId);
         saveData();

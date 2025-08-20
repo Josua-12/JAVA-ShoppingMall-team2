@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 public class CartItem implements Serializable {
 
+	/**
+	 * 
+	 */
 	private Product product;
 	private int quantity;
 	
@@ -22,7 +25,7 @@ public class CartItem implements Serializable {
 	}
 	
 	// 상품 가격 getter
-	public int getTotalPrice() {
+	public double getTotalPrice() {
 		return product.getPrice()*quantity;
 	}
 	

@@ -1,70 +1,23 @@
 package com.shopping.repository;
 
 import java.util.List;
-
 import com.shopping.model.User;
-import com.shopping.persistence.FileManager;
-import com.shopping.util.Constants;
 
-/*
- * 사용자 데이터 접근 담당하는 Repository 클래스
- * CRUD 기능 제공 
- */
-public class UserRepository {
+public interface UserRepository {
+    User save(User user);
+    List<User> saveAll(List<User> userList);
 
-	//파일명 상수
-	private static final String FILE_NAME = Constants.USER_DATA_FILE;
-	
-	//사용자 저장
-	public User save(User user) {
-		// 기존 사용자 목록 조회
-		List<User> users = FileManager.readFromFile(FILE_NAME);
-		
-		// 새 사용자 추가
-		users.add(user);
-		
-		// 파일에 저장
-		FileManager.writeToFile(FILE_NAME, users);
-		
-		return user;
-	}
+    boolean existsById(String id);
+    boolean existsByEmail(String email);
 
-	public boolean existsById(String id) {
-		
-		return findById(id) != null;
-	}
+    User findById(String id);
+    User findByEmail(String email);
+    List<User> findByNameContaining(String keyword);
+    List<User> findAll();
 
-	//ID로 사용자 조회
-	public User findById(String id) {
-		List<User> users = FileManager.readFromFile(FILE_NAME);
-				
-		return users.stream()
-				.filter(u -> u.getId().equals(id))
-				.findFirst()
-				.orElse(null);
-	}
+    boolean deleteById(String id);
+    long count();
+    void deleteAll();
 
-	// 이메일로 사용자 조회
-	public User findByEmail(String email) {
-    List<User> users = FileManager.readFromFile(FILE_NAME);
-    return users.stream()
-            .filter(u -> u.getEmail().equalsIgnoreCase(email))
-            .findFirst()
-            .orElse(null);
-	}
-
-	// 전체 사용자 조회
-	public List<User> findAll() {
-    return FileManager.readFromFile(FILE_NAME);
-	}
-
-	// ID로 사용자 삭제
-	public boolean deleteById(String id) {
-        List<User> users = FileManager.readFromFile(FILE_NAME);
-        boolean removed = users.removeIf(u -> u.getId().equals(id));
-        if (removed) {
-            FileManager.writeToFile(FILE_NAME, users);
-        }
-        return removed;
-    }
+    User update(User user);
 }

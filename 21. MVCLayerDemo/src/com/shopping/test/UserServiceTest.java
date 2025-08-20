@@ -1,57 +1,85 @@
-package com.shopping.test;
-
-import java.io.File;
-
-import com.shopping.model.User;
+import com.shopping.repository.UserRepository;
 import com.shopping.service.UserService;
+import com.shopping.util.PasswordEncoder;
 
-public class UserServiceTest {
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
 
-    public static void main(String[] args) {
-        
-        new File("data").mkdir();
-        UserService userService = new UserService();
-        
-        System.out.println("=== 사용자 서비스 테스트 ===\n");
-        
-        //테스트1 : 정상 회원가입
-        System.out.println("1. 사용자 정상 회원가입 테스트");
-        try {
-            User user = userService.register("testuser1", "pass1234", "testuser1@choongang.com", "테스트유저1");
-            System.out.println("성공 : " + user.getName() + 
-                             " (잔액: " + user.getBalance() + "원)");            
-        } catch(Exception e) {
-            System.out.println("실패 : " + e.getMessage());
+    @Mock UserRepository userRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @InjectMocks UserService userService;
+
+    @Test
+    void register_success() {
+        String username = "alice";
+        String email = "alice@example.com";
+        String rawPw = "P@ssw0rd!";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(rawPw)).thenReturn("hashed_pw");
+        // save 시 id 할당 가정
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId("U001");
+            return u;
+        });
+
+        User result = userService.register(username, email, rawPw);
+
+        assertEquals("U001", result.getId());
+        assertEquals(UserStatus.ACTIVE, result.getStatus());
+        assertTrue(result.getRoles().contains(Role.USER));
+        assertNotEquals(rawPw, result.getPasswordHash());
+        assertEquals("hashed_pw", result.getPasswordHash());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void register_duplicateUsername() {
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(new User()));
+        assertThrows(DuplicateUsernameException.class,
+                () -> userService.register("alice", "a@a.com", "Pw#1abcd"));
+    }
+
+    @Test
+    void login_success() {
+        String username = "alice";
+        String rawPw = "P@ssw0rd!";
+
+        User stored = new User();
+        stored.setId("U001");
+        stored.setUsername(username);
+        stored.setStatus(UserStatus.ACTIVE);
+        stored.setPasswordHash("hashed_pw");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(stored));
+        when(passwordEncoder.matches(rawPw, "hashed_pw")).thenReturn(true);
+
+        Session session = userService.login(username, rawPw);
+
+        assertEquals("U001", session.getUserId());
+        assertNotNull(session.getExpiresAt());
+        verify(userRepository).updateLastLogin("U001");
+    }
+
+    @Test
+    void login_lockedAfterMaxFailures() {
+        String username = "alice";
+        User stored = new User();
+        stored.setId("U001");
+        stored.setUsername(username);
+        stored.setStatus(UserStatus.ACTIVE);
+        stored.setPasswordHash("hashed_pw");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(stored));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+        for (int i = 0; i < 5; i++) {
+            assertThrows(BadCredentialsException.class,
+                    () -> userService.login(username, "wrong" + i));
         }
-        
-        //테스트2 : 중복 ID
-        System.out.println("\n2. 중복 ID 테스트");
-        try {
-            userService.register("testuser1", "pass5678", "testuser2@choongang.com", "테스트유저2");
-            System.out.println("오류 : 중복 ID가 허용됨!");
-        } catch(Exception e) {
-            System.out.println("정상 : 중복 ID 거부됨 - " + e.getMessage());
-        }
-        
-        //테스트3 : 중복 이메일 (다른 ID로)
-        System.out.println("\n3. 중복 이메일 테스트");
-        try {
-            userService.register("testuser2", "pass5678", "testuser1@choongang.com", "테스트유저2");
-            System.out.println("오류 : 중복 이메일이 허용됨!");
-        } catch(Exception e) {
-            System.out.println("정상 : 중복 이메일 거부됨 - " + e.getMessage());
-        }
-        
-        //테스트4 : 유효한 다른 사용자 등록
-        System.out.println("\n4. 유효한 다른 사용자 등록 테스트");
-        try {
-            User user = userService.register("testuser3", "pass9012", "testuser3@choongang.com", "테스트유저3");
-            System.out.println("성공 : " + user.getName() + 
-                             " (잔액: " + user.getBalance() + "원)");            
-        } catch(Exception e) {
-            System.out.println("실패 : " + e.getMessage());
-        }
-        
-        System.out.println("\n=== 사용자 서비스 테스트 완료 ===");
+        // 마지막 실패로 잠금 처리 확인
+        verify(userRepository).updateStatus("U001", UserStatus.LOCKED);
     }
 }

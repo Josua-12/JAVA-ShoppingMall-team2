@@ -17,7 +17,7 @@ public class FileManager {
     // data 디렉토리 경로
     private static final String DATA_DIR = "data";
 
-    /**
+    /*
      * 파일에서 객체 리스트 읽기
      */
     @SuppressWarnings("unchecked")
