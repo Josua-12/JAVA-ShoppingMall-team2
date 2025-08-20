@@ -10,7 +10,10 @@ import java.util.Scanner;
 
 public class CartController {
 
-    private final CartRepository cartRepository; // 저장소 객체
+    /**
+	 * 
+	 */
+	private final CartRepository cartRepository; // 저장소 객체
     private final ProductRepository productRepository;
     private final Scanner scanner;
 

@@ -11,10 +11,9 @@ import java.util.Optional;
  */
 public class ProductService {
 
-    // [수정됨] 변수명도 fileProductRepository로 변경
+   
     private final ProductRepository ProductRepository;
 
-    // [수정됨] 생성자를 통해 외부에서 FileProductRepository 구현체를 주입받음
     public ProductService(ProductRepository ProductRepository) {
         this.ProductRepository = ProductRepository;
     }
@@ -29,13 +28,9 @@ public class ProductService {
     /**
      * 주어진 ID에 해당하는 상품을 검색하여 Optional<Product>로 반환합니다.
      */
-<<<<<<< HEAD
-    public Optional<Product> findProductById(String id) {
-        return fileProductRepository.findById(id);
-=======
+
     public Optional<Product> getProductById(String id) {
         return ProductRepository.findById(id);
->>>>>>> 9c84141c1eaa0cfb9c9027700f6679c321c659f6
     }
     
     /**
