@@ -18,20 +18,23 @@ public class MainController {
 
     // 다른 컨트롤러들(필요한 것만 우선)
     private final OrderController orderController;
-    // private final UserController userController;
-    // private final ProductController productController;
-    // private final CartController cartController;
-    // private final AdminController adminController;
+    private final UserController userController;
+    private final ProductController productController;
+    private final CartController cartController;
+    private final AdminController adminController;
 
     public MainController(Session session,
-                          OrderController orderController
-                          /*, UserController userController, ProductController productController, ...*/) {
+                          OrderController orderController, 
+                          UserController userController, 
+                          ProductController productController,
+                          CartController cartController,
+                          AdminController adminController ) {
         this.session = session;
         this.orderController = orderController;
-        // this.userController = userController;
-        // this.productController = productController;
-        // this.cartController = cartController;
-        // this.adminController = adminController;
+        this.userController = userController;
+        this.productController = productController;
+        this.cartController = cartController;
+        this.adminController = adminController;
     }
 
     public void start() {
