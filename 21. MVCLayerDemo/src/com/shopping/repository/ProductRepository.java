@@ -16,7 +16,7 @@ public interface ProductRepository {
 	
 	void saveAll(Product products); // 상품 다중 저장
 	
-	Optional<Product> findById(String products); // ID로 상품 조회
+	Optional<Product> findById(String productId); // ID로 상품 조회
 	
 	List<Product> findBynameContains(String name); // 이름(부분 일치)으로 조회
 	

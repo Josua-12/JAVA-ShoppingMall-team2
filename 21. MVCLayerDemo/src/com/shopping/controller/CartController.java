@@ -2,7 +2,7 @@ package com.shopping.controller;
 
 import com.shopping.model.Cart;
 import com.shopping.model.Product;
-import com.shopping.repository.FileCartRepository; // import는 그대로 유지
+import com.shopping.repository.CartRepository; // import는 그대로 유지
 import com.shopping.repository.ProductRepository;
 
 import java.util.Optional;
@@ -10,14 +10,14 @@ import java.util.Scanner;
 
 public class CartController {
 
-    private final FileCartRepository cartRepository; // 저장소 객체
+    private final CartRepository cartRepository; // 저장소 객체
     private final ProductRepository productRepository;
     private final Scanner scanner;
 
     //매개변수가 없는 기본 생성자로 변경
-    public CartController() {
-        this.cartRepository = new FileCartRepository();
-        this.productRepository = new ProductRepository();
+    public CartController(ProductRepository productRepository, CartRepository cartRepository) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
         this.scanner = new Scanner(System.in);
     }
 
