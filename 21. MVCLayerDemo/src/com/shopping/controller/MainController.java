@@ -158,10 +158,10 @@ public class MainController {
 //        cartController.menu(session);
 //    }
 //
-      //마이페이지
-      private void myPage() {
-    	  userController.myPage(session);
-      }
+//      //마이페이지
+//      private void myPage() {
+//    	  userController.myPage(session);
+//      }
 //
 //    // 로그아웃
 //    private void logout() {
