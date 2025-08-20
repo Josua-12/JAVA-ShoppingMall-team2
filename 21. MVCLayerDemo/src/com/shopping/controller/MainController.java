@@ -56,12 +56,12 @@ public class MainController {
                 showUserMenu(session.getUserId());
                 String sel = sc.nextLine().trim();
                 switch (sel) {
-//                    case "1" -> browseProducts();                   // 상품 둘러보기
-//                    case "2" -> searchProducts();                   // 상품 검색
-//                    case "3" -> cartController.runCartMenu();       // 장바구니 관리
-                    case "4" -> orderController.orderMenu();   				// 주문하기 (2.4.1)
-                    case "5" -> orderController.orderHistoryMenu(); 		// 주문 내역 (2.4.2)
-                    case "6" -> userController.myPage(session.getUserId()); // 마이페이지
+//                    case "1" -> browseProducts();      // 상품 둘러보기
+//                    case "2" -> searchProducts();      // 상품 검색
+                    case "3" -> cartController.runCartMenu(session.getUserId());	// 장바구니 관리
+                    case "4" -> orderController.orderMenu();   			// 주문하기 (2.4.1)
+                    case "5" -> orderController.orderHistoryMenu(); 	// 주문 내역 (2.4.2)
+                    case "6" -> userController.myPage(session.getUser());   // 마이페이지
                     case "7" -> userController.logout();            		// 로그아웃
                     default -> warn();
                 }
@@ -71,10 +71,10 @@ public class MainController {
                 switch (sel) {
 //                    case "1" -> browseProducts();                   // 상품 둘러보기
 //                    case "2" -> searchProducts();                   // 상품 검색
-//                    case "3" -> cartController.runCartMenu();       // 장바구니 관리
+                    case "3" -> cartController.runCartMenu(session.getUserId());// 장바구니 관리
                     case "4" -> orderController.orderMenu();   				// 주문하기 (2.4.1)
                     case "5" -> orderController.orderHistoryMenu(); 		// 주문 내역 (2.4.2)
-                    case "6" -> userController.myPage(session.getUserId()); // 마이페이지
+                    case "6" -> userController.myPage(session.getUser());   // 마이페이지
                     case "7" -> userController.logout();            		// 로그아웃
                     case "8" -> adminController.handleProductManagement();	// [관리] 상품 관리
                     case "9" -> adminController.handleUserManagement();     // [관리] 사용자 관리
