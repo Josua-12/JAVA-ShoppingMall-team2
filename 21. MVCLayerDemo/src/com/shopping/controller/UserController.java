@@ -1,12 +1,16 @@
 package com.shopping.controller;
 
+import java.util.List;
 import java.util.Scanner;
 
 import com.shopping.model.User;
+import com.shopping.Auth.Session;
 import com.shopping.model.Admin;
+import com.shopping.model.Order;
 import com.shopping.model.Role;
 import com.shopping.service.UserService;
 import com.shopping.service.AuthService;
+import com.shopping.service.OrderService;
 import com.shopping.repository.FileAdminRepository;
 import com.shopping.repository.FileUserRepository;
 
@@ -20,52 +24,142 @@ public class UserController {
 	private UserService userService;
 	private AuthService authService;
 	private Scanner scanner;
+	private OrderService orderService;
+	private Session session;
+
 	
-	public UserController() {
+	public UserController(Session session) {
 		FileUserRepository userRepo = new FileUserRepository();
 		FileAdminRepository adminRepo = new FileAdminRepository();
 		this.userService = new UserService(userRepo);
 		this.authService = new AuthService(userRepo, adminRepo);
 		this.scanner = new Scanner(System.in);
+		this.session = session;
 	}
 	
-	// 사용자 관리 메뉴 표시 및 처리 
-	public void showUserMenu() {
+	// 마이페이지
+	public void myPage(Session session) {
 		while(true) {
-			System.out.println("\n== 사용자 메뉴 ==");
-			System.out.println("1. 회원가입");
-			System.out.println("2. 로그인");
-			System.out.println("3. 로그아웃");
-			System.out.println("4. 내 정보 보기");
-			System.out.println("0. 돌아가기");
-			System.out.print("선택: ");
-			
-			String choice = scanner.nextLine();
-			
-			// 사용자 선택에 따른 메소드 호출
-			switch(choice) {
-			case "1":
-				register();		// 회원가입
-				break;
-			case "2":
-				login();		// 로그인
-				break;
-			case "3":
-				logout();		// 로그아웃
-				break;
-			case "4":
-				showUserInfo();	// 내 정보 보기
-				break;
-			case "0":
-				return;			// 메인 메뉴로 돌아가기
-			default:
-				System.out.println("잘못된 선택입니다.");
-			}
+			System.out.println("\n╔════════════════════════════════════════════╗");
+	        System.out.println("║                   마이 페이지                   ║");
+	        System.out.println("╚══════════════════════════════════════════════╝\n");
+	        
+	        System.out.println("║1. 내 정보 조회                                  ║");
+	        System.out.println("║2. 비밀번호 변경                                  ║");
+	        System.out.println("║3. 개인정보 수정                                  ║");
+	        System.out.println("║4. 주문 내역 조회                                 ║");
+	        System.out.println("║5. 회원 탈퇴                                     ║");
+	        System.out.println("║6. 돌아가기                                      ║");
+	        System.out.println("╚══════════════════════════════════════════════╝\n");
+
+	        String choice = scanner.nextLine();
+	        
+	        switch (choice) {
+            case "1":
+            	showUserInfo();
+                break;
+            case "2":
+            	changePassword();
+                break;
+            case "3":
+            	editPersonalInfo();
+                break;
+            case "4":
+            	viewOrderHistory();
+                break;
+            case "5":
+            	deleteAccount();
+                break;
+            case "6":
+                return;   // 메뉴 종료
+            default:
+                System.out.println("잘못된 선택입니다.");
+	        }
 		}
+	}
+	// 회원 탈퇴
+    private void deleteAccount() {
+    	User user = userService.findById(session.getUserId());
+    	if (user == null || session.getRole() != Role.USER) {
+    	    System.out.println("회원 전용 기능입니다.");
+    	    return;
+    	}
+        System.out.print("정말 탈퇴하시겠습니까? (Y/N): ");
+        String confirm = scanner.nextLine();
+        if (confirm.equalsIgnoreCase("Y")) {
+            try {
+                userService.deleteUser(user.getId());
+                authService.logout();
+                System.out.println("회원 탈퇴 완료. 이용해 주셔서 감사합니다.");
+            } catch (Exception e) {
+                System.out.println("회원 탈퇴 실패: " + e.getMessage());
+            }
+        } else {
+            System.out.println("탈퇴 취소");
+        }
+    }        
+	        
+    // 주문 내역 조회
+    private void viewOrderHistory() {
+        User user = (User) authService.getLoggedInUser();
+        if (user == null) {
+            System.out.println("로그인이 필요합니다.");
+            return;
+        }
+        System.out.println("=== 주문 내역 ===");
+        List<Order> orders = orderService.listOrders(user.getId(), Role.USER);
+
+        if (orders.isEmpty()) {
+            System.out.println("주문 내역이 없습니다.");
+            return;
+        }
+
+        for (Order order : orders) {
+            System.out.println("주문 ID: " + order.getOrderId() +
+                               ", 상태: " + order.getStatus() +
+                               ", 총 금액: " + order.getTotalPrice() +
+                               ", 날짜: " + order.getOrderDate());
+        }
+    }     
+	        
+	// 개인정보 수정
+    private void editPersonalInfo() {
+        User user = (User) authService.getLoggedInUser();
+        if (user == null) {
+            System.out.println("로그인이 필요합니다.");
+            return;
+        }
+        System.out.print("새 이름 입력: ");
+        String newName = scanner.nextLine();
+        System.out.print("새 이메일 입력: ");
+        String newEmail = scanner.nextLine();
+        try {
+            userService.updatePersonalInfo(user.getId(), newName, newEmail);
+            System.out.println("개인정보가 수정되었습니다.");
+        } catch (Exception e) {
+            System.out.println("개인정보 수정 실패: " + e.getMessage());
+        }
+    }        
+	        
+	// 비밀번호 변경
+	private void changePassword() {
+		User user = (User) authService.getLoggedInUser();
+	    if (user == null) {
+	        System.out.println("로그인이 필요합니다.");
+	        return;
+	    }
+	    System.out.print("새 비밀번호 입력: ");
+	    String newPwd = scanner.nextLine();
+	    try {
+	        userService.updatePassword(user.getId(), newPwd);
+	        System.out.println("비밀번호가 변경되었습니다.");
+	    } catch (Exception e) {
+	        System.out.println("비밀번호 변경 실패: " + e.getMessage());
+	    }
 	}
 
 	// 회원가입 처리
-	private void register() {
+	public void register() {
 		System.out.println("\n== 회원가입 ==");
 		
 		// 아이디 입력 받기
@@ -117,7 +211,7 @@ public class UserController {
 	}
 	
 	// 로그인 처리
-	private void login() {
+	public void login() {
 		System.out.println("\n== 로그인 ==");
 		
 		// 현재 로그인 상태 확인
@@ -153,7 +247,7 @@ public class UserController {
 	}
 	
 	// 로그아웃 처리
-	private void logout() {
+	public void logout() {
 		Object nowLoginObj = authService.getLoggedInUser();
 		if (nowLoginObj == null) {
 			System.out.println("로그인된 사용자가 없습니다.");

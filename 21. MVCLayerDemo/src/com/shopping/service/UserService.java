@@ -83,6 +83,8 @@ public class UserService {
     public List<User> getAllUsers() {
         return fileUserRepository.findAll();
     }
+    
+    
 
     /**
      * 로그인 검증 (ID 기반)
@@ -102,6 +104,59 @@ public class UserService {
         }
         
         return user;
+    }
+    
+ // 개인정보 수정 기능
+    public void updatePersonalInfo(String userId, String newName, String newEmail) throws Exception {
+        // ID로 사용자 조회
+        User user = fileUserRepository.findById(userId);
+        if (user == null) {
+            throw new Exception("사용자를 찾을 수 없습니다.");
+        }
+
+        // 유효성 검사
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new Exception("이름을 올바르게 입력해주세요.");
+        }
+        if (newEmail == null || !newEmail.contains("@") || !newEmail.contains(".")) {
+            throw new Exception("올바른 이메일 형식이 아닙니다.");
+        }
+
+        // 이메일 중복 검사 (본인 제외)
+        User existingUser = fileUserRepository.findByEmail(newEmail);
+        if (existingUser != null && !existingUser.getId().equals(userId)) {
+            throw new Exception("이미 사용 중인 이메일입니다.");
+        }
+
+        // 정보 업데이트
+        user.setName(newName);
+        user.setEmail(newEmail);
+
+        // 변경사항 저장
+        fileUserRepository.save(user);
+    }
+    
+ // 비밀번호 변경 기능
+    public void updatePassword(String userId, String newPassword) throws Exception {
+        // 사용자 조회
+        User user = fileUserRepository.findById(userId);
+        if (user == null) {
+            throw new Exception("사용자를 찾을 수 없습니다.");
+        }
+
+        // 비밀번호 유효성 검사 (간단 예시)
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new Exception("비밀번호를 올바르게 입력해주세요.");
+        }
+
+        // 비밀번호 해시화
+        String hashedPassword = PasswordEncoder.hash(newPassword);
+
+        // 비밀번호 변경
+        user.setPassword(hashedPassword);
+
+        // 변경사항 저장
+        fileUserRepository.save(user);
     }
 
 }
