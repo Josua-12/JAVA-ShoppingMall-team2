@@ -1,211 +1,411 @@
 package com.shopping.test;
 
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.DisplayName;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.Mockito.*;
+
+import java.util.*;
+import java.util.List;
+
 import com.shopping.Auth.Session;
 import com.shopping.model.Order;
 import com.shopping.model.OrderItem;
 import com.shopping.model.OrderStatus;
 import com.shopping.model.Role;
+import com.shopping.repository.FileOrderRepository;
 import com.shopping.repository.OrderRepository;
-import com.shopping.service.OrderService;
 
-import org.junit.jupiter.api.*;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * OrderService 기능 테스트
- * - 주문 생성/확정/배송/완료/취소
- * - 권한 / 재고 / 아이템 조작
- */
+@ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
-    /** ===== 인메모리 OrderRepository(테스트 더블) ===== */
-    static class InMemoryOrderRepository implements OrderRepository {
-        final Map<String, Order> store = new LinkedHashMap<>();
-        long seq = 0;
+    @Mock OrderRepository orderRepo;                 // 영속 계층 (Mock)
+    @Mock FileOrderRepository fileOrderRepository;   // 실코드 시그니처상 필요 (Mock)
+    @Mock OrderService.ProductRepository productRepo;// 재고 연동 (Mock)
 
-        @Override public synchronized void save(Order order) {
-            if (order.getOrderId() == null || order.getOrderId().isEmpty()) {
-                order.setOrderId(nextId());
-            }
-            store.put(order.getOrderId(), order);
-        }
-        @Override public synchronized Optional<Order> findById(String orderId) {
-            return Optional.ofNullable(store.get(orderId));
-        }
-        @Override public synchronized List<Order> findAll() {
-            return new ArrayList<>(store.values());
-        }
-        @Override public synchronized List<Order> findAll(int page, int size) {
-            return store.values().stream().skip((long)page*size).limit(size).toList();
-        }
-        @Override public synchronized boolean delete(String orderId) {
-            return store.remove(orderId) != null;
-        }
-        @Override public synchronized boolean updateStatus(String orderId, OrderStatus newStatus) {
-            Order o = store.get(orderId);
-            if (o == null) return false;
-            o.setStatus(newStatus);
-            return true;
-        }
-        @Override public synchronized List<Order> findByUserId(String userId) {
-            return store.values().stream().filter(o -> Objects.equals(o.getUserId(), userId)).toList();
-        }
-        @Override public synchronized List<Order> findByStatus(OrderStatus status) {
-            return store.values().stream().filter(o -> o.getStatus() == status).toList();
-        }
-        @Override public synchronized List<Order> findByDateRange(java.time.LocalDate from, java.time.LocalDate to) {
-            return new ArrayList<>(store.values()); // 간단 구현(실코드에 맞게 필요시 보강)
-        }
-        @Override public synchronized String nextId() { return "O" + (++seq); }
-    }
+    @Captor ArgumentCaptor<Order> orderCaptor;
 
-    /** ===== 스텁 ProductRepository(재고 관리용) ===== */
-    static class StubProductRepo implements OrderService.ProductRepository {
-        static class P { String id; int stock; P(String id, int stock){this.id=id; this.stock=stock;} }
-        final Map<String,P> stock = new ConcurrentHashMap<>();
-        StubProductRepo with(String id, int stockQty){ stock.put(id, new P(id, stockQty)); return this; }
-
-        @Override public boolean hasStock(String productId, int qty) {
-            P p = stock.get(productId); return p != null && p.stock >= qty;
-        }
-        @Override public void decreaseStock(String productId, int qty) {
-            P p = stock.get(productId);
-            if (p == null || p.stock < qty) throw new IllegalStateException("OutOfStock");
-            p.stock -= qty;
-        }
-        @Override public void increaseStock(String productId, int qty) {
-            P p = stock.get(productId);
-            if (p == null) stock.put(productId, new P(productId, qty));
-            else p.stock += qty;
-        }
-        int stockOf(String productId){ return stock.get(productId).stock; }
-    }
-
-    InMemoryOrderRepository repo;
-    StubProductRepo productRepo;
     OrderService service;
 
-    Session u1Session, u2Session, adminSession;
-    final String U1 = "U1";
-    final String U2 = "U2";
+    // 공용 데이터
+    final String ORDER_ID = "O1";
+    final String USER = "u1";
+    final String OTHER = "other";
+
+    // 간단한 아이템들
+    OrderItem i1 = item("P1", "상품1", 1000, 1);
+    OrderItem i2 = item("P2", "상품2", 2000, 2); // lineTotal = 4000
+
+    static OrderItem item(String pid, String name, int price, int qty) {
+        OrderItem it = new OrderItem(pid, name, price, qty);
+        return it;
+    }
+
+    static Session adminSession() {
+        Session s = new Session();
+        s.login("admin", Role.ADMIN);
+        return s;
+    }
+
+    static Session userSession(String uid) {
+        Session s = new Session();
+        s.login(uid, Role.USER);
+        return s;
+    }
 
     @BeforeEach
     void setUp() {
-        repo = new InMemoryOrderRepository();
-        productRepo = new StubProductRepo().with("P1", 5).with("P2", 10);
-        service = new OrderService(repo, productRepo);
-
-        u1Session = new Session(); u1Session.login(U1, Role.USER);
-        u2Session = new Session(); u2Session.login(U2, Role.USER);
-        adminSession = new Session(); adminSession.login("ADMIN", Role.ADMIN);
+        service = new OrderService(orderRepo, productRepo, fileOrderRepository);
     }
 
-    private OrderItem item(String pid, String pname, int price, int qty) {
-        return new OrderItem(pid, pname, price, qty);
+    Order newPendingOrder(String id, String userId, OrderItem... items) {
+        Order o = new Order();           // 기본 PENDING
+        o.setOrderId(id);
+        o.setUserId(userId);
+        for (OrderItem it : items) o.addItem(it);
+        return o;
     }
 
-    @Test
-    @DisplayName("주문 생성: 중복 상품 병합 + 총액 검증")
-    void placeOrder_merge_and_total() {
-        List<OrderItem> items = new ArrayList<>();
-        items.add(item("P1", "상품1", 10_000, 2));
-        items.add(item("P1", "상품1", 10_000, 1));
-        items.add(item("P2", "상품2", 5_000, 3));
+    // -----------------------------
+    // place(주문 생성)
+    // -----------------------------
+    @Nested
+    @DisplayName("placeOrder() - 주문 생성")
+    class PlaceOrder {
 
-        Order o = service.placeOrder(U1, items, Role.USER);
-        assertNotNull(o.getOrderId());
-        assertEquals(U1, o.getUserId());
-        assertEquals(2, o.getItems().size()); // P1은 병합되어 한 줄
-        assertEquals(45_000, o.getTotalPrice());
-        assertEquals(OrderStatus.PENDING, o.getStatus());
+        @Test
+        @DisplayName("장바구니/요청이 비어있으면 예외")
+        void place_emptyItems_throws() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.placeOrder(USER, List.of(), Role.USER)
+            );
+            assertTrue(ex.getMessage().contains("items is empty"));
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("정상 생성 시 상태=PENDING으로 저장")
+        void place_ok_pendingSaved() {
+            List<OrderItem> cart = List.of(i1, i2);
+
+            // save() 호출 시점의 객체를 캡쳐해서 상태 확인
+            service.placeOrder(USER, cart, Role.USER);
+
+            verify(orderRepo, times(1)).save(orderCaptor.capture());
+            Order saved = orderCaptor.getValue();
+            assertEquals(OrderStatus.PENDING, saved.getStatus());
+            assertEquals(USER, saved.getUserId());
+            assertEquals(3, saved.getItems().stream().mapToInt(OrderItem::getQuantity).sum()); // 1 + 2
+        }
     }
 
-    @Test
-    @DisplayName("확정 → 배송 → 완료: 상태 전이 & 재고 차감")
-    void confirm_ship_deliver_with_stock() {
-        Order o = service.placeOrder(U1, List.of(
-                item("P1","상품1",10_000,3),
-                item("P2","상품2",5_000,3)
-        ), Role.USER);
+    // -----------------------------
+    // confirm(확정)
+    // -----------------------------
+    @Nested
+    @DisplayName("confirmOrder() - 주문 확정")
+    class ConfirmOrder {
 
-        service.confirmOrder(o.getOrderId(), U1, Role.USER, u1Session);
-        assertEquals(OrderStatus.CONFIRMED, repo.findById(o.getOrderId()).get().getStatus());
-        assertEquals(2, productRepo.stockOf("P1")); // 5 - 3
-        assertEquals(7, productRepo.stockOf("P2")); // 10 - 3
+        @Test
+        @DisplayName("PENDING만 가능 + 재고 충분하면 차감 후 CONFIRMED 저장")
+        void confirm_ok_stockSufficient() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1, i2);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
 
-        service.shipOrder(o.getOrderId(), U1, Role.USER, u1Session);
-        assertEquals(OrderStatus.SHIPPING, repo.findById(o.getOrderId()).get().getStatus());
+            // 모든 라인 재고 충분
+            when(productRepo.hasStock("P1", 1)).thenReturn(true);
+            when(productRepo.hasStock("P2", 2)).thenReturn(true);
 
-        service.deliverOrder(o.getOrderId(), U1, Role.USER, u1Session);
-        assertEquals(OrderStatus.DELIVERED, repo.findById(o.getOrderId()).get().getStatus());
+            // ADMIN 권한으로 진행(소유권 체킹 우회)
+            service.confirmOrder(ORDER_ID, "admin", Role.ADMIN, adminSession());
+
+            // 재고 차감 순서 검증
+            InOrder inOrder = inOrder(orderRepo, productRepo);
+            inOrder.verify(orderRepo).findById(ORDER_ID);
+            inOrder.verify(productRepo).hasStock("P1", 1);
+            inOrder.verify(productRepo).hasStock("P2", 2);
+            inOrder.verify(productRepo).decreaseStock("P1", 1);
+            inOrder.verify(productRepo).decreaseStock("P2", 2);
+            inOrder.verify(orderRepo).save(o);
+
+            assertEquals(OrderStatus.CONFIRMED, o.getStatus());
+        }
+
+        @Test
+        @DisplayName("재고 부족 시 예외(메시지 검증) + 차감/저장 없음")
+        void confirm_insufficientStock_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1, i2);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            when(productRepo.hasStock("P1", 1)).thenReturn(true);
+            when(productRepo.hasStock("P2", 2)).thenReturn(false); // 부족
+
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.confirmOrder(ORDER_ID, "admin", Role.ADMIN, adminSession())
+            );
+            assertTrue(ex.getMessage().contains("재고 부족"));
+            assertTrue(ex.getMessage().contains("P2"));
+
+            verify(productRepo, never()).decreaseStock(anyString(), anyInt());
+            verify(orderRepo, never()).save(any());
+            assertEquals(OrderStatus.PENDING, o.getStatus());
+        }
+
+        @Test
+        @DisplayName("경계값: 수량=1, 재고=정확히 동일 → 성공")
+        void confirm_exactStock_ok() {
+            OrderItem only = item("PX", "엣지", 100, 1);
+            Order o = newPendingOrder(ORDER_ID, USER, only);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+            when(productRepo.hasStock("PX", 1)).thenReturn(true);
+
+            service.confirmOrder(ORDER_ID, "admin", Role.ADMIN, adminSession());
+
+            verify(productRepo).decreaseStock("PX", 1);
+            verify(orderRepo).save(o);
+            assertEquals(OrderStatus.CONFIRMED, o.getStatus());
+        }
+
+        @Test
+        @DisplayName("PENDING이 아니면 확정 불가")
+        void confirm_illegalState_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            o.changeStatus(OrderStatus.CANCELLED);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.confirmOrder(ORDER_ID, "admin", Role.ADMIN, adminSession())
+            );
+            assertTrue(ex.getMessage().contains("확정할 수 없습니다"));
+            verify(orderRepo, never()).save(any());
+        }
     }
 
-    @Test
-    @DisplayName("취소는 PENDING에서만 가능")
-    void cancel_only_pending() {
-        Order o1 = service.placeOrder(U1, List.of(item("P1","상품1",10_000,1)), Role.USER);
-        assertDoesNotThrow(() -> service.cancelOrder(o1.getOrderId(), U1, Role.USER));
-        assertEquals(OrderStatus.CANCELLED, repo.findById(o1.getOrderId()).get().getStatus());
+    // -----------------------------
+    // ship / deliver
+    // -----------------------------
+    @Nested
+    @DisplayName("shipOrder(), deliverOrder() - 배송/완료")
+    class ShipDeliver {
 
-        Order o2 = service.placeOrder(U1, List.of(item("P1","상품1",10_000,1)), Role.USER);
-        service.confirmOrder(o2.getOrderId(), U1, Role.USER, u1Session);
-        assertThrows(RuntimeException.class, () -> service.cancelOrder(o2.getOrderId(), U1, Role.USER));
+        @Test
+        @DisplayName("CONFIRMED → SHIPPING 가능(ADMIN만)")
+        void ship_ok_fromConfirmed() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            o.changeStatus(OrderStatus.CONFIRMED);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            service.shipOrder(ORDER_ID, "admin", Role.ADMIN);
+
+            verify(orderRepo).save(o);
+            assertEquals(OrderStatus.SHIPPING, o.getStatus());
+        }
+
+        @Test
+        @DisplayName("PENDING에서 ship 시도 → 예외")
+        void ship_fromPending_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.shipOrder(ORDER_ID, "admin", Role.ADMIN)
+            );
+            assertTrue(ex.getMessage().contains("배송 시작할 수 없습니다"));
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("SHIPPING → DELIVERED 가능(ADMIN만)")
+        void deliver_ok_fromShipping() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            o.changeStatus(OrderStatus.CONFIRMED);
+            o.changeStatus(OrderStatus.SHIPPING);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            service.deliverOrder(ORDER_ID, "admin", Role.ADMIN);
+
+            verify(orderRepo).save(o);
+            assertEquals(OrderStatus.DELIVERED, o.getStatus());
+        }
     }
 
-    @Test
-    @DisplayName("권한: 타인 주문 확정/취소/조회 불가")
-    void authorization_checks() {
-        Order o = service.placeOrder(U1, List.of(item("P1","상품1",10_000,1)), Role.USER);
+    // -----------------------------
+    // cancel
+    // -----------------------------
+    @Nested
+    @DisplayName("cancelOrder() - 취소")
+    class CancelOrder {
 
-        assertThrows(RuntimeException.class, () -> service.confirmOrder(o.getOrderId(), U2, Role.USER, u2Session));
-        assertThrows(RuntimeException.class, () -> service.cancelOrder(o.getOrderId(), U2, Role.USER));
-        assertThrows(RuntimeException.class, () -> service.getOrder(o.getOrderId(), U2, Role.USER, u2Session));
+        @Test
+        @DisplayName("사용자 본인은 PENDING에서만 취소 가능")
+        void cancel_user_fromPending_ok() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1, i2);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
 
-        // 관리자 정책을 허용한다면 다음을 허용하도록 변경 가능
-        // assertDoesNotThrow(() -> service.confirmOrder(o.getOrderId(), "ADMIN", Role.ADMIN, adminSession));
+            service.cancelOrder(ORDER_ID, USER, Role.USER);
+
+            verify(orderRepo).save(o);
+            assertEquals(OrderStatus.CANCELLED, o.getStatus());
+            // PENDING → CANCELLED 는 재고 복원 없음
+            verify(productRepo, never()).increaseStock(anyString(), anyInt());
+        }
+
+        @Test
+        @DisplayName("사용자: PENDING 외 상태에서 취소 시 예외")
+        void cancel_user_notPending_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            o.changeStatus(OrderStatus.CONFIRMED);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.cancelOrder(ORDER_ID, USER, Role.USER)
+            );
+            assertTrue(ex.getMessage().contains("PENDING 상태에서만"));
+            verify(orderRepo, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("CONFIRMED → CANCELLED 시 재고 복구 호출")
+        void cancel_fromConfirmed_restock() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1, i2);
+            o.changeStatus(OrderStatus.CONFIRMED);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            service.cancelOrder(ORDER_ID, "admin", Role.ADMIN);
+
+            verify(orderRepo).save(o);
+            assertEquals(OrderStatus.CANCELLED, o.getStatus());
+            verify(productRepo).increaseStock("P1", 1);
+            verify(productRepo).increaseStock("P2", 2);
+        }
+
+        @Test
+        @DisplayName("타인이 사용자 권한으로 취소 시도 → 소유권 위반 예외")
+        void cancel_otherUser_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            // USER 권한이면서 소유자 아님 → authorizeOwnership 위반
+            assertThrows(IllegalStateException.class,
+                () -> service.cancelOrder(ORDER_ID, OTHER, Role.USER));
+            verify(orderRepo, never()).save(any());
+        }
     }
 
-    @Test
-    @DisplayName("재고 부족 시 주문/확정 불가")
-    void out_of_stock_cases() {
-        // 주문 생성 자체에서 수량 검증(정책에 따라 확정 시 검증일 수도)
-        assertThrows(RuntimeException.class, () ->
-                service.placeOrder(U1, List.of(item("P1","상품1",10_000, 6)), Role.USER));
+    // -----------------------------
+    // 조회(findById, findByUser) + 권한 필터링
+    // -----------------------------
+    @Nested
+    @DisplayName("조회/권한")
+    class QueryAuth {
+
+        @Test
+        @DisplayName("getOrder: 본인(USER)만 조회 가능, ADMIN은 모두 가능")
+        void getOrder_authz() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+
+            // ADMIN → OK
+            Order adminView = service.getOrder(ORDER_ID, "admin", Role.ADMIN, adminSession());
+            assertEquals(ORDER_ID, adminView.getOrderId());
+
+            // USER & 본인 → OK
+            Order ownerView = service.getOrder(ORDER_ID, USER, Role.USER, userSession(USER));
+            assertEquals(ORDER_ID, ownerView.getOrderId());
+
+            // USER & 타인 → 예외
+            assertThrows(IllegalStateException.class,
+                () -> service.getOrder(ORDER_ID, OTHER, Role.USER, userSession(OTHER)));
+        }
+
+        @Test
+        @DisplayName("listOrders: USER는 자신의 주문만, ADMIN은 전체")
+        void listOrders_filtering() {
+            Order a = newPendingOrder("O-a", USER, i1);
+            Order b = newPendingOrder("O-b", OTHER, i2);
+            when(orderRepo.findAll()).thenReturn(List.of(a, b));
+            when(orderRepo.findByUserId(USER)).thenReturn(List.of(a));
+            when(orderRepo.findByUserId(OTHER)).thenReturn(List.of(b));
+
+            List<Order> adminList = service.listOrders("admin", Role.ADMIN);
+            assertEquals(2, adminList.size());
+
+            List<Order> userList = service.listOrders(USER, Role.USER);
+            assertEquals(1, userList.size());
+            assertEquals(USER, userList.get(0).getUserId());
+        }
     }
 
-    @Test
-    @DisplayName("아이템 추가/삭제/수량변경 및 총액 반영")
-    void add_remove_update_item() {
-        Order o = service.placeOrder(U1, List.of(item("P1","상품1",10_000,1)), Role.USER);
+    // -----------------------------
+    // 가격 고정/아이템 변경 금지(확정 이후)
+    // -----------------------------
+    @Nested
+    @DisplayName("확정 이후 가격/라인 변경 금지")
+    class PriceLock {
 
-        // add
-        service.addItem(o.getOrderId(), item("P2","상품2",5_000,3), U1, Role.USER, u1Session);
-        Order afterAdd = repo.findById(o.getOrderId()).orElseThrow();
-        assertEquals(2, afterAdd.getItems().size());
-        assertEquals(25_000, afterAdd.getTotalPrice());
+        @Test
+        @DisplayName("CONFIRMED 이후 add/remove/updateItemQty는 예외")
+        void afterConfirmed_modifyItems_throws() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1);
+            o.changeStatus(OrderStatus.CONFIRMED);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
 
-        // update qty
-        service.updateItemQty(o.getOrderId(), "P2", 1, U1, Role.USER, u1Session);
-        Order afterUpdate = repo.findById(o.getOrderId()).orElseThrow();
-        assertEquals(15_000, afterUpdate.getTotalPrice()); // 10,000 + 5,000*1
+            // add
+            assertThrows(IllegalStateException.class,
+                () -> service.addItem(ORDER_ID, item("PX", "추가", 10, 1), USER, Role.USER, userSession(USER)));
 
-        // remove
-        service.removeItem(o.getOrderId(), "P2", U1, Role.USER, u1Session);
-        Order afterRemove = repo.findById(o.getOrderId()).orElseThrow();
-        assertEquals(1, afterRemove.getItems().size());
-        assertEquals(10_000, afterRemove.getTotalPrice());
+            // remove
+            assertThrows(IllegalStateException.class,
+                () -> service.removeItem(ORDER_ID, "P1", USER, Role.USER, userSession(USER)));
+
+            // update qty
+            assertThrows(IllegalStateException.class,
+                () -> service.updateItemQty(ORDER_ID, "P1", 99, USER, Role.USER, userSession(USER)));
+
+            // 저장/재고계 호출 없음
+            verify(orderRepo, never()).save(any());
+            verify(productRepo, never()).decreaseStock(anyString(), anyInt());
+            verify(productRepo, never()).increaseStock(anyString(), anyInt());
+        }
     }
 
-    @Test
-    @DisplayName("본인 주문 조회 성공")
-    void getOrder_ok_for_owner() {
-        Order o = service.placeOrder(U1, List.of(item("P1","상품1",10_000,1)), Role.USER);
-        Order got = service.getOrder(o.getOrderId(), U1, Role.USER, u1Session);
-        assertEquals(o.getOrderId(), got.getOrderId());
-        assertEquals(U1, got.getUserId());
+    // -----------------------------
+    // 저장/호출 상호작용: 횟수/순서 verify
+    // -----------------------------
+    @Nested
+    @DisplayName("저장/호출 상호작용 순서 검증")
+    class InteractionOrder {
+
+        @Test
+        @DisplayName("confirm: findById → hasStock* → decreaseStock* → save 순")
+        void confirm_interaction_order() {
+            Order o = newPendingOrder(ORDER_ID, USER, i1, i2);
+            when(orderRepo.findById(ORDER_ID)).thenReturn(Optional.of(o));
+            when(productRepo.hasStock("P1", 1)).thenReturn(true);
+            when(productRepo.hasStock("P2", 2)).thenReturn(true);
+
+            service.confirmOrder(ORDER_ID, "admin", Role.ADMIN, adminSession());
+
+            InOrder in = inOrder(orderRepo, productRepo);
+            in.verify(orderRepo).findById(ORDER_ID);
+            in.verify(productRepo).hasStock("P1", 1);
+            in.verify(productRepo).hasStock("P2", 2);
+            in.verify(productRepo).decreaseStock("P1", 1);
+            in.verify(productRepo).decreaseStock("P2", 2);
+            in.verify(orderRepo).save(o);
+        }
     }
 }
