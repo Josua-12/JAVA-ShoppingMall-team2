@@ -25,11 +25,22 @@ public class AuthService {
     public AuthService(UserRepository userRepo, AdminRepository adminRepo) {
         this.userRepository = userRepo;
         this.adminRepository = adminRepo;
-        
         ensureDefaultAdmin(); // 기본 관리자 계정 생성 보장
+        ensureDefaultUser();
     }
 
-    /**
+    private void ensureDefaultUser() {
+    	if (!userRepository.existsById("user")) {      // "user"라는 기본 id 존재 여부 확인
+            try {
+                registerUser("user", "user123", "user@shopping.com", "기본 사용자");
+                System.out.println("기본 사용자 계정이 생성되었습니다.");
+            } catch (Exception e) {
+                System.out.println("기본 사용자 생성 실패: " + e.getMessage());
+            }
+        }
+	}
+
+	/**
      * 회원가입 (User)
      */
     public User registerUser(String id, String password, String email, String name) throws Exception {
