@@ -36,7 +36,7 @@ public class Product implements Serializable {
     public void setName(String name) { this.name = name; }
     public ProductCategory getCategory() { return category; }
     public void setCategory(ProductCategory category) { this.category = category; }
-    public double getPrice() { return price; }
+    public int getPrice() { return price; }
     public void setPrice(int price) { this.price = price; }
     public int getStock() { return stock; }
     public void setStock(int stock) { this.stock = stock; }
