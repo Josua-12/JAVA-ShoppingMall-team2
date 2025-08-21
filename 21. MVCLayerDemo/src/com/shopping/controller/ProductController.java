@@ -142,7 +142,7 @@ public class ProductController {
 
         try {
             int choice = Integer.parseInt(scanner.nextLine());
-            double min = 0, max = -1; // max=-1은 무한대를 의미
+            int min = 0, max = -1; // max=-1은 무한대를 의미
             String rangeStr = "";
 
             switch (choice) {
