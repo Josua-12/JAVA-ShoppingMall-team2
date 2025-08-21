@@ -6,17 +6,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="21. MVCLayerDemo/src"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/junit-platform-console-standalone-1.10.2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/objenesis-3.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/byte-buddy-agent-1.14.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/byte-buddy-1.14.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/mockito-core-5.12.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/mockito-junit-jupiter-5.12.0.jar"/>
-=======
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
-	<classpathentry kind="lib" path="C:/Users/admin/Downloads/mockito-core-5.19.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/admin/Documents/카카오톡 받은 파일/junit-platform-console-standalone-1.10.2/junit-platform-console-standalone-1.10.2.jar"/>
->>>>>>> 84c3e151007ee9949b5368cad4ac9a2cc4e5e686
 	<classpathentry kind="output" path="bin"/>
 </classpath>
