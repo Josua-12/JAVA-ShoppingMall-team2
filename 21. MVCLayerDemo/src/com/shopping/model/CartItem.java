@@ -42,7 +42,7 @@ public class CartItem implements Serializable {
 	
 	@Override
 	public String toString() {
-		return String.format("%s - %d개, 총 %,d원", 
+		return String.format("%s - %d개, 총 %,.0f원", 
 				 product.getName(), 
 				 quantity, 
 				 getTotalPrice());
