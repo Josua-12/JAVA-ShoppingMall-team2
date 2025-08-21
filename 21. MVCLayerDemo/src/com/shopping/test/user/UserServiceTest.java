@@ -5,13 +5,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.shopping.service.UserService;
 import com.shopping.model.User;
+import com.shopping.repository.FileUserRepository;
 
 public class UserServiceTest {
     private UserService userService;
+    private FileUserRepository userRepo;
 
     @BeforeEach
     void setup() {
-        userService = new UserService();
+        userRepo = new FileUserRepository();
+        userRepo.deleteAll();  // users.dat 초기화
+        userService = new UserService(userRepo);  // 주입 생성자 사용
     }
 
     @Test
