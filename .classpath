@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" path="21. MVCLayerDemo/src"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/junit-platform-console-standalone-1.10.2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/objenesis-3.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/byte-buddy-agent-1.14.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/byte-buddy-1.14.12.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/mockito-core-5.12.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/user/Downloads/mockito-junit-jupiter-5.12.0.jar"/>
-=======
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
-	<classpathentry kind="lib" path="C:/Users/admin/Downloads/mockito-core-5.19.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/admin/Documents/카카오톡 받은 파일/junit-platform-console-standalone-1.10.2/junit-platform-console-standalone-1.10.2.jar"/>
->>>>>>> 84c3e151007ee9949b5368cad4ac9a2cc4e5e686
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/byte-buddy-1.14.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/byte-buddy-agent-1.14.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/junit-platform-console-standalone-1.10.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/mockito-core-5.12.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/mockito-junit-jupiter-5.12.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="21. MVCLayerDemo/src/com/shopping/lib/objenesis-3.3.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
