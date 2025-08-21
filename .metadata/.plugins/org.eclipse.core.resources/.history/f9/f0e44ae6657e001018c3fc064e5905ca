@@ -1,0 +1,5 @@
+package com.shopping.test.user;
+
+public class UserIntegrationTest {
+
+}
