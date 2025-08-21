@@ -149,7 +149,7 @@ public class FileProductRepository implements ProductRepository {
     }
 
     @Override
-    public List<Product> findByPriceRange(double minPrice, double maxPrice) {
+    public List<Product> findByPriceRange(int minPrice, int maxPrice) {
         return productStore.values().stream()
                 .filter(p -> p.getPrice() >= minPrice && (maxPrice == -1 || p.getPrice() < maxPrice))
                 .sorted(Comparator.comparing(Product::getPrice))

@@ -121,7 +121,7 @@ public class ProductService {
      * @param max 최대 가격 (-1인 경우 무제한)
      * @return 해당 가격대의 상품 목록
      */
-    public List<Product> findProductsByPriceRange(double min, double max) {
+    public List<Product> findProductsByPriceRange(int min, int max) {
         return productRepository.findByPriceRange(min, max);
     }
 

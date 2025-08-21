@@ -383,7 +383,7 @@ public class AdminController {
 	            System.out.print("상품명: ");
 	            String name = scanner.nextLine();
 	            System.out.print("가격: ");
-	            double price = Double.parseDouble(scanner.nextLine());
+	            int price = Integer.parseInt(scanner.nextLine());
 	            System.out.print("재고: ");
 	            int stock = Integer.parseInt(scanner.nextLine());
 	            System.out.printf("카테고리 (%s): ", ProductCategory.getCategoryNames());
@@ -392,7 +392,7 @@ public class AdminController {
 				System.out.print("상품 설명: ");
 				String description = scanner.nextLine();
 
-				Product newProduct = new Product(null, name, category, price, stock, description);
+				Product newProduct = new Product(id, name, category, price, stock, description);
 		        productService.addProduct(newProduct);
 		        System.out.println("상품이 성공적으로 등록되었습니다. (ID: " + newProduct.getId() + ")");
 
@@ -424,7 +424,7 @@ public class AdminController {
 
 	            System.out.print("새 가격 (변경 없으면 Enter): ");
 	            String priceStr = scanner.nextLine();
-	            if (!priceStr.isBlank()) product.setPrice(Double.parseDouble(priceStr));
+	            if (!priceStr.isBlank()) product.setPrice(Integer.parseInt(priceStr));
 
 	            System.out.print("새 재고 (변경 없으면 Enter): ");
 	            String stockStr = scanner.nextLine();
@@ -494,7 +494,7 @@ public class AdminController {
 	            System.out.printf("%-10s %-20s %-12s %-5s %-10s\n", "ID", "이름", "가격", "재고", "카테고리");
 	            System.out.println("-------------------------------------------------------------------");
 	            for (Product product : products) {
-	                System.out.printf("%-10s %-20s %-12.0f %-5d %-10s\n",
+	                System.out.printf("%-10s %-20s %-12d %-5d %-10s\n",
 	                        product.getId(),
 	                        product.getName(),
 	                        product.getPrice(),
