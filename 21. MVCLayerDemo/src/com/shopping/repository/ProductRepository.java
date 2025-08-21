@@ -33,5 +33,5 @@ public interface ProductRepository {
 
     List<Product> findNewArrivals(int limit); // 신상품 조회
 
-    List<Product> findByPriceRange(double minPrice, double maxPrice); // 가격대별 상품 조회
+    List<Product> findByPriceRange(int minPrice, int maxPrice); // 가격대별 상품 조회
 }

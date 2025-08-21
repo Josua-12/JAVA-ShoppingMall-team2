@@ -21,6 +21,7 @@ public class AuthorizationServiceTest {
         authorizationService = new AuthorizationService(mockAuthService);
     }
 
+    
     @Test
     void testAssertLoggedIn_SucceedsWhenLoggedIn() throws UnauthorizedException {
         Mockito.when(mockAuthService.isLoggedIn()).thenReturn(true);

@@ -41,12 +41,12 @@ public class Admin extends User {
     
     // 관리자는 잔액 관련 기능이 필요 없으므로 재정의하여 막을 수 있습니다.
     @Override
-    public boolean hasEnoughBalance(double amount) {
+    public boolean hasEnoughBalance(int amount) {
         return false;
     }
 
     @Override
-    public void deductBalance(double amount) {
+    public void deductBalance(int amount) {
         // 관리자는 잔액 차감 기능이 없음을 명확히 합니다.
         throw new UnsupportedOperationException("관리자는 잔액 관련 기능을 사용할 수 없습니다.");
     }

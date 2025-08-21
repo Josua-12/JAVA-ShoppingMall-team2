@@ -7,7 +7,6 @@ import com.shopping.service.UserService;
 import com.shopping.repository.FileUserRepository;
 import com.shopping.model.User;
 import com.shopping.util.PasswordEncoder;
-import java.util.List;
 
 public class UserServiceTest2 {
 
@@ -46,20 +45,24 @@ public class UserServiceTest2 {
     void testLoginSuccess() throws Exception {
         User user = new User("id3", "hashedpassword", "email3@example.com", "Name3");
         Mockito.when(mockUserRepo.findById("id3")).thenReturn(user);
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            mock.when(() -> PasswordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
 
-        User loginUser = userService.login("id3", "password");
-        assertEquals("id3", loginUser.getId());
+            User loginUser = userService.login("id3", "password");
+            assertEquals("id3", loginUser.getId());
+        }
     }
 
     @Test
     void testLoginFailWrongPassword() {
         User user = new User("id4", "hashedpassword", "email4@example.com", "Name4");
         Mockito.when(mockUserRepo.findById("id4")).thenReturn(user);
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(false);
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            mock.when(() -> PasswordEncoder.matches(Mockito.anyString(), Mockito.anyString())).thenReturn(false);
 
-        Exception ex = assertThrows(Exception.class, () -> userService.login("id4", "wrongpwd"));
-        assertTrue(ex.getMessage().contains("비밀번호가 올바르지 않습니다."));
+            Exception ex = assertThrows(Exception.class, () -> userService.login("id4", "wrongpwd"));
+            assertTrue(ex.getMessage().contains("비밀번호가 올바르지 않습니다."));
+        }
     }
 
     @Test
@@ -79,9 +82,11 @@ public class UserServiceTest2 {
         User user = new User("id6", "oldHash", "email6@example.com", "Name6");
         Mockito.when(mockUserRepo.findById("id6")).thenReturn(user);
         Mockito.when(mockUserRepo.save(Mockito.any(User.class))).thenAnswer(i -> i.getArgument(0));
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.hash(Mockito.anyString())).thenReturn("newHashedPwd");
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            mock.when(() -> PasswordEncoder.hash(Mockito.anyString())).thenReturn("newHashedPwd");
 
-        userService.updatePassword("id6", "newPassword");
-        assertEquals("newHashedPwd", user.getPassword());
+            userService.updatePassword("id6", "newPassword");
+            assertEquals("newHashedPwd", user.getPassword());
+        }
     }
 }
