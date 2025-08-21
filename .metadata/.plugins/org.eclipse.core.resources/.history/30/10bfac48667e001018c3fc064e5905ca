@@ -1,0 +1,91 @@
+package com.shopping.test.user;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+
+import com.shopping.model.User;
+import com.shopping.model.Role;
+import com.shopping.service.AuthService;
+import com.shopping.repository.UserRepository;
+import com.shopping.repository.AdminRepository;
+import com.shopping.util.PasswordEncoder;
+
+public class UserIntegrationTest {
+
+    @Mock
+    UserRepository userRepository;
+
+    @Mock
+    AdminRepository adminRepository;
+
+    AuthService authService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        authService = new AuthService(userRepository, adminRepository);
+    }
+
+    @Test
+    void testUserSignUpSignInLogoutIntegration() throws Exception {
+        // 1. 회원가입 성공 테스트
+        Mockito.when(userRepository.existsById("user1")).thenReturn(false);
+        Mockito.when(userRepository.existsByEmail("user1@email.com")).thenReturn(false);
+        Mockito.when(userRepository.save(Mockito.any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        User user = authService.registerUser("user1", "password123", "user1@email.com", "홍길동");
+        assertEquals("user1", user.getId());
+        assertEquals(10000.0, user.getBalance());
+
+        // 2. 회원가입 중복 검사 (ID)
+        Mockito.when(userRepository.existsById("user1")).thenReturn(true);
+
+        Exception ex1 = assertThrows(Exception.class, () -> {
+            authService.registerUser("user1", "anotherPW", "other@email.com", "이몽룡");
+        });
+        assertTrue(ex1.getMessage().contains("이미 사용 중인 ID"));
+
+        // 3. 회원가입 중복 검사 (이메일)
+        Mockito.when(userRepository.existsById("user2")).thenReturn(false);
+        Mockito.when(userRepository.existsByEmail("user1@email.com")).thenReturn(true);
+        Exception ex2 = assertThrows(Exception.class, () -> {
+            authService.registerUser("user2", "anotherPW", "user1@email.com", "성춘향");
+        });
+        assertTrue(ex2.getMessage().contains("이미 사용 중인 이메일"));
+
+        // 4. 로그인 성공
+        User loginUser = new User("user1", PasswordEncoder.hash("password123"), "user1@email.com", "홍길동");
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            Mockito.when(userRepository.findByEmail("user1@email.com")).thenReturn(loginUser);
+            Mockito.when(adminRepository.findByEmail("user1@email.com")).thenReturn(null);
+            mock.when(() -> PasswordEncoder.matches("password123", loginUser.getPassword())).thenReturn(true);
+
+            Role role = authService.login("user1@email.com", "password123");
+            assertEquals(Role.USER, role);
+            assertEquals(loginUser, authService.getLoggedInUser());
+        }
+
+        // 5. 로그인 실패 (잘못된 비밀번호)
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            Mockito.when(userRepository.findByEmail("user1@email.com")).thenReturn(loginUser);
+            mock.when(() -> PasswordEncoder.matches("wrongpw", loginUser.getPassword())).thenReturn(false);
+
+            Exception ex3 = assertThrows(Exception.class, () -> {
+                authService.login("user1@email.com", "wrongpw");
+            });
+            assertTrue(ex3.getMessage().contains("이메일 또는 비밀번호가 잘못되었습니다"));
+        }
+
+        // 6. 로그아웃
+        Mockito.when(userRepository.findByEmail("user1@email.com")).thenReturn(loginUser);
+        try (MockedStatic<PasswordEncoder> mock = Mockito.mockStatic(PasswordEncoder.class)) {
+            mock.when(() -> PasswordEncoder.matches("password123", loginUser.getPassword())).thenReturn(true);
+            authService.login("user1@email.com", "password123");
+        }
+        assertTrue(authService.isLoggedIn());
+        authService.logout();
+        assertFalse(authService.isLoggedIn());
+        assertNull(authService.getLoggedInUser());
+    }
+}

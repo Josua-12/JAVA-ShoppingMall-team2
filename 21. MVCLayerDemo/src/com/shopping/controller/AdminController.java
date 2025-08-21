@@ -330,7 +330,7 @@ public class AdminController {
             System.out.println("이름: " + user.getName());
             System.out.println("이메일: " + user.getEmail());
             System.out.println("역할: " + user.getRole());
-            System.out.printf("잔액: %.2f\n", user.getBalance());
+            System.out.printf("잔액: %d\n", user.getBalance());
         } else {
             System.out.println("해당 ID의 회원을 찾을 수 없습니다.");
         }
