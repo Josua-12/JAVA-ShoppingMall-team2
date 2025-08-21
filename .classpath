@@ -7,5 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="21. MVCLayerDemo/src"/>
 	<classpathentry kind="lib" path="C:/Users/user/Downloads/junit-platform-console-standalone-1.10.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

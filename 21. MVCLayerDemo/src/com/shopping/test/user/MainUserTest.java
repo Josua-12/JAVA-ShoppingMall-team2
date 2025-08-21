@@ -1,4 +1,4 @@
-package com.shopping.test;
+package com.shopping.test.user;
 
 import com.shopping.Auth.Session;
 import com.shopping.controller.UserController;
