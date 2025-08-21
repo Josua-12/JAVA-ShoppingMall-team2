@@ -192,19 +192,21 @@ public class ProductController {
     public void addProduct() {
         System.out.println("\n--- 새 상품 등록 ---");
         try {
+        	System.out.print("상품 ID: ");
+            String id = scanner.nextLine();
             System.out.print("상품 이름: ");
             String name = scanner.nextLine();
             System.out.printf("상품 카테고리 (%s): ", ProductCategory.getCategoryNames());
             String categoryInput = scanner.nextLine();
             ProductCategory category = ProductCategory.fromString(categoryInput);
             System.out.print("상품 가격: ");
-            double price = Double.parseDouble(scanner.nextLine());
+            int price = Integer.parseInt(scanner.nextLine());
             System.out.print("초기 재고: ");
             int stock = Integer.parseInt(scanner.nextLine());
             System.out.print("상품 설명 (500자 이내): ");
             String description = scanner.nextLine();
 
-            Product product = new Product(null, name, category, price, stock, description);
+            Product product = new Product(id, name, category, price, stock, description);
             Product newProduct = productService.addProduct(product);
             System.out.println("상품 '" + newProduct.getName() + "' (ID: " + newProduct.getId() + ") 이(가) 등록되었습니다.");
         } catch (IllegalArgumentException e) {
@@ -228,7 +230,7 @@ public class ProductController {
 
             System.out.print("새 상품 가격 (현재: " + currentProduct.getPrice() + ", 변경 없으면 엔터): ");
             String priceInput = scanner.nextLine().trim();
-            if (!priceInput.isEmpty()) currentProduct.setPrice(Double.parseDouble(priceInput));
+            if (!priceInput.isEmpty()) currentProduct.setPrice(Integer.parseInt(priceInput));
 
             productService.updateProduct(currentProduct);
             System.out.println("ID " + id + " 상품 정보가 수정되었습니다.");
