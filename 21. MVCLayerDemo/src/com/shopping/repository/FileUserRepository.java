@@ -13,9 +13,10 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        if (existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + user.getEmail());
-        }
+    	User existing = findByEmail(user.getEmail());
+    	if (existing != null && !existing.getId().equals(user.getId())) {
+    	    throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + user.getEmail());
+    	}
         List<User> users = FileManager.readFromFile(FILE_NAME);
 
         boolean updated = false;

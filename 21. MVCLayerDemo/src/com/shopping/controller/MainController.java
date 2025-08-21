@@ -160,7 +160,7 @@ public class MainController {
 //
       //마이페이지
       private void myPage() {
-    	  userController.myPage(session);
+    	  userController.myPage(session.getUser());
       }
 //
 //    // 로그아웃

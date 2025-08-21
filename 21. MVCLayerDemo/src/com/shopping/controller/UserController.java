@@ -11,7 +11,9 @@ import com.shopping.model.Role;
 import com.shopping.service.UserService;
 import com.shopping.service.AuthService;
 import com.shopping.service.OrderService;
+import com.shopping.repository.DefaultFileOrderRepository;
 import com.shopping.repository.FileAdminRepository;
+import com.shopping.repository.FileOrderRepository;
 import com.shopping.repository.FileUserRepository;
 
 
@@ -29,16 +31,23 @@ public class UserController {
 
 	
 	public UserController(Session session) {
-		FileUserRepository userRepo = new FileUserRepository();
-		FileAdminRepository adminRepo = new FileAdminRepository();
-		this.userService = new UserService(userRepo);
-		this.authService = new AuthService(userRepo, adminRepo);
-		this.scanner = new Scanner(System.in);
-		this.session = session;
+	    FileUserRepository userRepo = new FileUserRepository();
+	    FileAdminRepository adminRepo = new FileAdminRepository();
+	    DefaultFileOrderRepository orderRepo = new DefaultFileOrderRepository("data/orders.dat");
+	    this.userService = new UserService(userRepo);
+	    this.authService = new AuthService(userRepo, adminRepo);
+	    this.orderService = new OrderService(orderRepo, null, orderRepo);
+	    this.scanner = new Scanner(System.in);
+	    this.session = session;
 	}
 	
+	public AuthService getAuthService() {
+	    return authService;
+	}
+
+	
 	// 마이페이지
-	public void myPage(Session session) {
+	public void myPage(User user) {
 		while(true) {
 			System.out.println("\n╔════════════════════════════════════════════╗");
 	        System.out.println("║                   마이 페이지                   ║");
@@ -78,26 +87,28 @@ public class UserController {
 		}
 	}
 	// 회원 탈퇴
-    private void deleteAccount() {
-    	User user = userService.findById(session.getUserId());
-    	if (user == null || session.getRole() != Role.USER) {
-    	    System.out.println("회원 전용 기능입니다.");
-    	    return;
-    	}
-        System.out.print("정말 탈퇴하시겠습니까? (Y/N): ");
-        String confirm = scanner.nextLine();
-        if (confirm.equalsIgnoreCase("Y")) {
-            try {
-                userService.deleteUser(user.getId());
-                authService.logout();
-                System.out.println("회원 탈퇴 완료. 이용해 주셔서 감사합니다.");
-            } catch (Exception e) {
-                System.out.println("회원 탈퇴 실패: " + e.getMessage());
-            }
-        } else {
-            System.out.println("탈퇴 취소");
-        }
-    }        
+	private void deleteAccount() {
+	    User user = userService.findById(session.getUserId());
+	    if (user == null || session.getRole() != Role.USER) {
+	        System.out.println("회원 전용 기능입니다.");
+	        return;
+	    }
+	    System.out.print("정말 탈퇴하시겠습니까? (Y/N): ");
+	    String confirm = scanner.nextLine();
+	    if (confirm.equalsIgnoreCase("Y")) {
+	        try {
+	            userService.deleteUser(user.getId());
+	            authService.logout();
+	            session.logout();  // ★★★ 꼭 추가하세요!!
+	            System.out.println("회원 탈퇴 완료. 이용해 주셔서 감사합니다.");
+	        } catch (Exception e) {
+	            System.out.println("회원 탈퇴 실패: " + e.getMessage());
+	        }
+	    } else {
+	        System.out.println("탈퇴 취소");
+	    }
+	}
+   
 	        
     // 주문 내역 조회
     private void viewOrderHistory() {
@@ -212,74 +223,62 @@ public class UserController {
 	
 	// 로그인 처리
 	public void login() {
-		System.out.println("\n== 로그인 ==");
-		
-		// 현재 로그인 상태 확인
-		Object currentLoginObj = authService.getLoggedInUser();
-		if (currentLoginObj != null) {
-		    String userName = (currentLoginObj instanceof User ? ((User)currentLoginObj).getName() : ((Admin)currentLoginObj).getName());
-		    System.out.println("이미 로그인되어 있습니다: " + userName);
-		    return;
-		}
-		
-		System.out.print("이메일: ");
-		String email = scanner.nextLine();
-		
-		System.out.print("패스워드: ");
-		String password = scanner.nextLine();
-		
-		try {
-			Object loginObj = authService.login(email, password);
-			
-			if (loginObj instanceof User) {
-	            User currentUser = (User) currentLoginObj;
-	            Role userRole = currentUser.getRole();
-	            System.out.println("로그인 성공! 회원: " + currentUser.getName() + "님");
-	            System.out.println("역할: " + (userRole == Role.ADMIN ? "관리자" : "회원"));
-	        } else if (currentLoginObj instanceof Admin) {
-	            Admin admin = (Admin) currentLoginObj;
-	            System.out.println("로그인 성공! 관리자: " + admin.getName() + "님");
-	            System.out.println("관리 권한: " + (admin.canManageProducts() ? "있음" : "없음"));
-	        }
-		} catch (Exception e) {
-			System.out.println("로그인 실패: " + e.getMessage());
-		}
-	}
-	
-	// 로그아웃 처리
-	public void logout() {
-		Object nowLoginObj = authService.getLoggedInUser();
-		if (nowLoginObj == null) {
-			System.out.println("로그인된 사용자가 없습니다.");
-			return;
-		}
-		
-		String userName = (nowLoginObj instanceof User ? ((User)nowLoginObj).getName() : ((Admin)nowLoginObj).getName());
-		authService.logout();
-		System.out.println(userName + "님이 로그아웃되었습니다.");
-	}
-	
-	// 내 정보 보기
-	private void showUserInfo() {
-	    Object obj = authService.getLoggedInUser();
-	    if (obj == null) {
-	        System.out.println("로그인이 필요합니다.");
+	    System.out.println("\n== 로그인 ==");
+	    
+	    if (session.isLoggedIn()) {
+	        System.out.println("이미 로그인되어 있습니다.");
 	        return;
 	    }
 
-	    if (obj instanceof User user) {
-	        System.out.println("\n== 내 정보 (회원) ==");
-	        System.out.println("ID: " + user.getId());
-	        System.out.println("이름: " + user.getName());
-	        System.out.println("이메일: " + user.getEmail());
-	        System.out.println("잔액: " + (int)user.getBalance() + "원");
-	    } else if (obj instanceof Admin admin) {
-	        System.out.println("\n== 내 정보 (관리자) ==");
-	        System.out.println("ID: " + admin.getId());
-	        System.out.println("이름: " + admin.getName());
-	        System.out.println("이메일: " + admin.getEmail());
-	        System.out.println("역할: " + admin.getRole());
-	        System.out.println("관리 권한: " + (admin.canManageProducts() ? "있음" : "없음"));
+	    System.out.print("이메일: ");
+	    String email = scanner.nextLine();
+	    System.out.print("패스워드: ");
+	    String password = scanner.nextLine();
+	    
+	    try {
+	        Role role = authService.login(email, password);  // Role 반환받기
+	        Object loggedUser = authService.getLoggedInUser();
+	        
+	        if (role == Role.USER && loggedUser instanceof User user) {
+	            session.login(user.getId(), Role.USER, user);
+	            System.out.println("로그인 성공! 회원: " + user.getName());
+	        } else if (role == Role.ADMIN && loggedUser instanceof Admin admin) {
+	            session.login(admin.getId(), Role.ADMIN, null);
+	            System.out.println("로그인 성공! 관리자: " + admin.getName());
+	        }
+	    } catch (Exception e) {
+	        System.out.println("로그인 실패: " + e.getMessage());
 	    }
 	}
+
+
+
+
+	public void logout() {
+	    if (!session.isLoggedIn()) {
+	        System.out.println("로그인된 사용자가 없습니다.");
+	        return;
+	    }
+	    String name = (session.getUser() != null) ? session.getUser().getName() : session.getUserId();
+	    authService.logout();
+	    session.logout();
+	    System.out.println(name + "님이 로그아웃 되었습니다.");
+	}
+
+
+	
+	// 내 정보 보기
+	private void showUserInfo() {
+	    User user = session.getUser();  // 세션에서 User 객체 직접 읽기
+	    if (user == null) {
+	        System.out.println("로그인이 필요합니다.");
+	        return;
+	    }
+	    System.out.println("\n== 내 정보 (회원) ==");
+	    System.out.println("ID: " + user.getId());
+	    System.out.println("이름: " + user.getName());
+	    System.out.println("이메일: " + user.getEmail());
+	    System.out.println("잔액: " + (int) user.getBalance() + "원");
+	}
+
 }

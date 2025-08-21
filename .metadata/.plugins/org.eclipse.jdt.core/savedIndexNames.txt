@@ -1,4 +1,0 @@
-INDEX VERSION 1.134+C:\Users\user\Desktop\PRJ_git\JAVA-ShoppingMall-team2\.metadata\.plugins\org.eclipse.jdt.core
-1865797976.index
-3190413531.index
-3947683423.index
