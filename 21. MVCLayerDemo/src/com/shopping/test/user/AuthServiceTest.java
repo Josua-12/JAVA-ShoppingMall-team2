@@ -52,36 +52,45 @@ public class AuthServiceTest {
         User user = new User("user3", PasswordEncoder.hash("pass123"), "email3@example.com", "User3");
         Mockito.when(userRepository.findByEmail("email3@example.com")).thenReturn(user);
         Mockito.when(adminRepository.findByEmail("email3@example.com")).thenReturn(null);
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.matches("pass123", user.getPassword())).thenReturn(true);
 
-        Role role = authService.login("email3@example.com", "pass123");
-        assertEquals(Role.USER, role);
-        assertEquals(user, authService.getLoggedInUser());
+        try (MockedStatic<PasswordEncoder> mocked = Mockito.mockStatic(PasswordEncoder.class)) {
+            mocked.when(() -> PasswordEncoder.matches("pass123", user.getPassword())).thenReturn(true);
+
+            Role role = authService.login("email3@example.com", "pass123");
+            assertEquals(Role.USER, role);
+            assertEquals(user, authService.getLoggedInUser());
+        }
     }
 
     @Test
     void testLoginFailWrongPassword() {
         User user = new User("user4", PasswordEncoder.hash("correctpass"), "email4@example.com", "User4");
         Mockito.when(userRepository.findByEmail("email4@example.com")).thenReturn(user);
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.matches("wrongpass", user.getPassword())).thenReturn(false);
 
-        Exception ex = assertThrows(Exception.class, () -> {
-            authService.login("email4@example.com", "wrongpass");
-        });
-        assertTrue(ex.getMessage().contains("이메일 또는 비밀번호가 잘못되었습니다."));
+        try (MockedStatic<PasswordEncoder> mocked = Mockito.mockStatic(PasswordEncoder.class)) {
+            mocked.when(() -> PasswordEncoder.matches("wrongpass", user.getPassword())).thenReturn(false);
+
+            Exception ex = assertThrows(Exception.class, () -> {
+                authService.login("email4@example.com", "wrongpass");
+            });
+            assertTrue(ex.getMessage().contains("이메일 또는 비밀번호가 잘못되었습니다."));
+        }
     }
 
     @Test
     void testLogoutClearsState() throws Exception {
         User user = new User("user5", PasswordEncoder.hash("pwd123"), "email5@example.com", "User5");
         Mockito.when(userRepository.findByEmail("email5@example.com")).thenReturn(user);
-        Mockito.mockStatic(PasswordEncoder.class).when(() -> PasswordEncoder.matches("pwd123", user.getPassword())).thenReturn(true);
 
-        authService.login("email5@example.com", "pwd123");
-        assertTrue(authService.isLoggedIn());
+        try (MockedStatic<PasswordEncoder> mocked = Mockito.mockStatic(PasswordEncoder.class)) {
+            mocked.when(() -> PasswordEncoder.matches("pwd123", user.getPassword())).thenReturn(true);
 
-        authService.logout();
-        assertFalse(authService.isLoggedIn());
-        assertNull(authService.getLoggedInUser());
+            authService.login("email5@example.com", "pwd123");
+            assertTrue(authService.isLoggedIn());
+
+            authService.logout();
+            assertFalse(authService.isLoggedIn());
+            assertNull(authService.getLoggedInUser());
+        }
     }
 }
