@@ -28,14 +28,12 @@ public class ProductController {
     /**
      * 애플리케이션의 메인 메뉴를 시작합니다.
      */
-    public void startMainMenu() {
-    	startProductSearchMenu();
-    }
+
 
     /**
      * 일반 사용자를 위한 상품 조회 메뉴를 표시합니다.
      */
-    public void startProductSearchMenu() {
+    public void startMainMenu() {
         int choice;
         do {
             System.out.println("\n--- 상품 조회 메뉴 ---");
